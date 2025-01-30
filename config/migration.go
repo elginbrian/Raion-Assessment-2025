@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	migrations "raion-battlepass/db/migrations"
+	migrations "raion-battlepass/migrations"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -15,6 +15,7 @@ func RunSQLMigrations(db *pgxpool.Pool) error {
 		migrations.InsertUsersData,
 		migrations.CreatePostsTable,
 		migrations.InsertPostsData,
+		migrations.CreateCommentsTable,
 	}
 
 	for i, migration := range Migrations {

@@ -16,6 +16,7 @@ func SetupRoutes(
 	userHandler *handler.UserHandler,
 	authHandler *handler.AuthHandler,
 	postHandler *handler.PostHandler,
+	commentHandler *handler.CommentHandler, 
 	jwtSecret string,
 ) {
 	config.InitMetrics()
@@ -32,6 +33,7 @@ func SetupRoutes(
 	setupAuthRoutes(app, authHandler, jwtSecret)
 	setupPostRoutes(app, postHandler)
 	setupSearchRoutes(app, userHandler, postHandler)
+	setupCommentRoutes(app, commentHandler)
 }
 
 func redirectToDocs(c *fiber.Ctx) error {
@@ -67,4 +69,11 @@ func setupPostRoutes(app *fiber.App, handler *handler.PostHandler) {
 	postGroup.Get("/", handler.GetAllPosts)
 	postGroup.Get("/:id", handler.GetPostByID)
 	postGroup.Get("/user/:user_id", handler.GetPostsByUserID)
+}
+
+func setupCommentRoutes(app *fiber.App, handler *handler.CommentHandler) {
+	commentGroup := app.Group("/api/posts/:post_id/comments")
+	commentGroup.Get("/", handler.GetCommentsByPostID)     
+	commentGroup.Post("/", handler.CreateComment)         
+	commentGroup.Delete("/:id", handler.DeleteComment)    
 }

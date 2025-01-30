@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"raion-battlepass/internal/service"
 	"raion-battlepass/pkg/request"
 	"raion-battlepass/pkg/response"
@@ -11,10 +12,22 @@ import (
 
 type AuthHandler struct {
 	authService service.AuthService
+	validate    *validator.Validate
 }
 
 func NewAuthHandler(authService service.AuthService) *AuthHandler {
-	return &AuthHandler{authService: authService}
+	return &AuthHandler{
+		authService: authService,
+		validate:    validator.New(),
+	}
+}
+
+func extractToken(c *fiber.Ctx) (string, error) {
+	authHeader := c.Get("Authorization")
+	if authHeader == "" || len(authHeader) <= len("Bearer ") {
+		return "", fiber.NewError(fiber.StatusUnauthorized, "Missing or invalid token")
+	}
+	return authHeader[len("Bearer "):], nil
 }
 
 // @Summary Register a new user
@@ -31,15 +44,17 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req request.UserRegistrationRequest
 
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("Error parsing request body: %v", err)
 		return response.ValidationError(c, "Invalid request format")
 	}
 
-	validate := validator.New()
-	if validationErrs := validate.Struct(req); validationErrs != nil {
-		return response.ValidationError(c, validationErrs.Error())
+	if err := h.validate.Struct(req); err != nil {
+		log.Printf("Validation failed: %v", err)
+		return response.ValidationError(c, err.Error())
 	}
 
 	if err := h.authService.Register(req.Username, req.Email, req.Password); err != nil {
+		log.Printf("Registration failed: %v", err)
 		return response.Error(c, err.Error())
 	}
 
@@ -54,7 +69,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param request body request.UserLoginRequest true "User login details"
-// @Success 201 {object} response.LoginResponse "Successful registration response"
+// @Success 201 {object} response.LoginResponse "Successful login response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /api/auth/login [post]
@@ -62,16 +77,18 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req request.UserLoginRequest
 
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("Error parsing request body: %v", err)
 		return response.ValidationError(c, "Invalid request format")
 	}
 
-	validate := validator.New()
-	if validationErrs := validate.Struct(req); validationErrs != nil {
-		return response.ValidationError(c, validationErrs.Error())
+	if err := h.validate.Struct(req); err != nil {
+		log.Printf("Validation failed: %v", err)
+		return response.ValidationError(c, err.Error())
 	}
 
 	token, err := h.authService.Login(req.Email, req.Password)
 	if err != nil {
+		log.Printf("Login failed: %v", err)
 		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
 	}
 
@@ -91,26 +108,25 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /api/auth/current-user [get]
 func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
-    authHeader := c.Get("Authorization")
-    if authHeader == "" || len(authHeader) <= len("Bearer ") {
-        return response.Error(c.Status(fiber.StatusUnauthorized), "Missing or invalid token")
-    }
+	token, err := extractToken(c)
+	if err != nil {
+		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
+	}
 
-    token := authHeader[len("Bearer "):]
+	ctx := c.Context()
+	user, err := h.authService.GetCurrentUser(ctx, token)
+	if err != nil {
+		log.Printf("Error fetching user info: %v", err)
+		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
+	}
 
-    ctx := c.Context()
-    user, err := h.authService.GetCurrentUser(ctx, token)
-    if err != nil {
-        return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
-    }
-
-    return response.Success(c, response.User{
-        ID:        user.ID,
-        Username:  user.Name,
-        Email:     user.Email,
-        CreatedAt: user.CreatedAt,
-        UpdatedAt: user.UpdatedAt,
-    })
+	return response.Success(c, response.User{
+		ID:        user.ID,
+		Username:  user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	})
 }
 
 // @Summary Change your password
@@ -125,34 +141,35 @@ func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /api/auth/change-password [put]
 func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
-    authHeader := c.Get("Authorization")
-    if authHeader == "" || len(authHeader) <= len("Bearer ") {
-        return response.Error(c.Status(fiber.StatusUnauthorized), "Missing or invalid token")
-    }
+	token, err := extractToken(c)
+	if err != nil {
+		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
+	}
 
-    token := authHeader[len("Bearer "):]
+	ctx := c.Context()
+	user, err := h.authService.GetCurrentUser(ctx, token)
+	if err != nil {
+		log.Printf("Error fetching user info for password change: %v", err)
+		return response.Error(c.Status(fiber.StatusUnauthorized), "Unauthorized: "+err.Error())
+	}
 
-    ctx := c.Context()
-    user, err := h.authService.GetCurrentUser(ctx, token)
-    if err != nil {
-        return response.Error(c.Status(fiber.StatusUnauthorized), "Unauthorized: "+err.Error())
-    }
+	var req request.ChangePasswordRequest
+	if err := c.BodyParser(&req); err != nil {
+		log.Printf("Error parsing request body: %v", err)
+		return response.ValidationError(c, "Invalid request format")
+	}
 
-    var req request.ChangePasswordRequest
-    if err := c.BodyParser(&req); err != nil {
-        return response.ValidationError(c, "Invalid request format")
-    }
+	if err := h.validate.Struct(req); err != nil {
+		log.Printf("Validation failed: %v", err)
+		return response.ValidationError(c, err.Error())
+	}
 
-    validate := validator.New()
-    if validationErrs := validate.Struct(req); validationErrs != nil {
-        return response.ValidationError(c, validationErrs.Error())
-    }
+	if err := h.authService.ChangePassword(user.ID, req.OldPassword, req.NewPassword); err != nil {
+		log.Printf("Password change failed: %v", err)
+		return response.Error(c, err.Error())
+	}
 
-    if err := h.authService.ChangePassword(user.ID, req.OldPassword, req.NewPassword); err != nil {
-        return response.Error(c, err.Error())
-    }
-
-    return response.Success(c, response.ChangePasswordData{
-        Message: "Password changed successfully",
-    })
+	return response.Success(c, response.ChangePasswordData{
+		Message: "Password changed successfully",
+	})
 }

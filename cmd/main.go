@@ -59,7 +59,7 @@ func main() {
 	app.Use(logger.New())
 	app.Use(cors.New())
 
-	routes.SetupRoutes(app, container.UserHandler, container.AuthHandler, container.PostHandler, jwtSecret)
+	routes.SetupRoutes(app, container.UserHandler, container.AuthHandler, container.PostHandler, container.CommentHandler, jwtSecret)
 
 	app.Static("/uploads", "./public/uploads")
 	app.Static("/", "./cmd")

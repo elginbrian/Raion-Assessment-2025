@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"raion-battlepass/internal/domain"
 	"raion-battlepass/internal/service"
 	"raion-battlepass/pkg/request"
@@ -22,35 +23,34 @@ func NewUserHandler(userService service.UserService, authService service.AuthSer
     }
 }
 
-func parseUserID(c *fiber.Ctx) (string, error) {
-	id := c.Params("id")
-	return id, nil
+func mapToUserResponse(user domain.User) domain.UserResponse {
+	return domain.UserResponse{
+		ID:        user.ID,
+		Username:  user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
 }
 
 // GetAllUsers godoc
 // @Summary Get all users
-// @Description Retrieve a list of all users from the database, including their usernames, emails, and timestamps for when their accounts were created or updated.
+// @Description Retrieve a list of all users from the database.
 // @Tags users
 // @Produce json
-// @Success 200 {object} response.GetAllUsersResponse "Successful fetch users response" 
-// @Failure 400 {object} response.ErrorResponse "Bad request"
+// @Success 200 {object} response.GetAllUsersResponse "Successful fetch users response"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /api/users [get]
 func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 	users, err := h.userService.FetchAllUsers()
 	if err != nil {
-		return response.Error(c, err.Error())
+		log.Printf("Error fetching users: %v", err)
+		return response.Error(c, "Error fetching users", fiber.StatusInternalServerError)
 	}
 
 	var userResponses []domain.UserResponse
 	for _, user := range users {
-		userResponses = append(userResponses, domain.UserResponse{
-			ID:        user.ID,
-			Username:  user.Name,
-			Email:     user.Email,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-		})
+		userResponses = append(userResponses, mapToUserResponse(user))
 	}
 
 	return response.Success(c, userResponses)
@@ -58,12 +58,11 @@ func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 
 // GetUserByID godoc
 // @Summary Get user details by ID
-// @Description Retrieve the details of a specific user by their ID. The response includes the user's username, email, and account timestamps.
+// @Description Retrieve the details of a specific user by their ID.
 // @Tags users
 // @Produce json
 // @Param id path string true "User ID"
-// @Success 200 {object} response.GetUserByIDResponse "Successful fetch user by ID response" 
-// @Failure 400 {object} response.ErrorResponse "Bad request"
+// @Success 200 {object} response.GetUserByIDResponse "Successful fetch user by ID response"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /api/users/{id} [get]
 func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
@@ -71,118 +70,123 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 
 	user, err := h.userService.FetchUserByID(id)
 	if err != nil {
-		return response.Error(c, "User not found")
+		log.Printf("Error fetching user by ID: %v", err)
+		return response.Error(c, "User not found", fiber.StatusNotFound)
 	}
 
-	userResponse := domain.UserResponse{
-		ID:        user.ID,
-		Username:  user.Name,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
-
-	return response.Success(c, userResponse)
+	return response.Success(c, mapToUserResponse(user))
 }
 
+// CreateUser godoc
+// @Summary Create a new user
+// @Description Create a new user in the database.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body request.CreateUserRequest true "User details"
+// @Success 201 {object} response.CreateUserResponse "User created successfully"
+// @Failure 400 {object} response.ErrorResponse "Validation error"
+// @Failure 500 {object} response.ErrorResponse "Internal server error"
+// @Router /api/users [post]
 func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	var user domain.User
 	if err := c.BodyParser(&user); err != nil {
+		log.Printf("Error parsing request body: %v", err)
 		return response.ValidationError(c, "Invalid input")
 	}
 
-	if validationErrs := response.ValidateStruct(user); validationErrs != nil {
-		return response.ValidationError(c, validationErrs)
+	if err := response.ValidateStruct(user); err != nil {
+		log.Printf("Validation error: %v", err)
+		return response.ValidationError(c, fmt.Sprintf("Validation error: %v", err))
 	}
 
 	createdUser, err := h.userService.CreateUser(user)
 	if err != nil {
+		log.Printf("Error creating user: %v", err)
 		return response.Error(c, err.Error())
 	}
 
-	userResponse := domain.UserResponse{
-		ID:        createdUser.ID,
-		Username:  createdUser.Name,
-		Email:     createdUser.Email,
-		CreatedAt: createdUser.CreatedAt,
-		UpdatedAt: createdUser.UpdatedAt,
-	}
-
-	return response.Success(c.Status(fiber.StatusCreated), userResponse)
+	return response.Success(c.Status(fiber.StatusCreated), mapToUserResponse(createdUser))
 }
 
 // UpdateUser godoc
 // @Summary Update user information
-// @Description Update the username of the authenticated user. The user must include their JWT token in the Authorization header.
+// @Description Update the username of the authenticated user.
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param request body request.UpdateUserRequest true "Request body with updated username"
+// @Param request body request.UpdateUserRequest true "Updated username"
 // @Security BearerAuth
 // @Success 200 {object} response.UpdateUserResponse "Successful update user response"
-// @Failure 400 {object} response.ErrorResponse "Bad request"
+// @Failure 400 {object} response.ErrorResponse "Validation error"
 // @Failure 401 {object} response.ErrorResponse "Unauthorized or invalid token"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /api/users [put]
 func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
-    authHeader := c.Get("Authorization")
-    if authHeader == "" || len(authHeader) <= len("Bearer ") {
-        return response.Error(c.Status(fiber.StatusUnauthorized), "Missing or invalid token")
-    }
+	token, err := extractToken(c)
+	if err != nil {
+		return response.Error(c.Status(fiber.StatusUnauthorized), "Unauthorized: "+err.Error())
+	}
 
-    token := authHeader[len("Bearer "):]
+	ctx := c.Context()
+	user, err := h.authService.GetCurrentUser(ctx, token)
+	if err != nil {
+		log.Printf("Unauthorized access: %v", err)
+		return response.Error(c.Status(fiber.StatusUnauthorized), "Unauthorized: "+err.Error())
+	}
 
-    ctx := c.Context()
-    user, err := h.authService.GetCurrentUser(ctx, token)
-    if err != nil {
-        return response.Error(c.Status(fiber.StatusUnauthorized), "Unauthorized: "+err.Error())
-    }
+	var payload request.UpdateUserRequest
+	if err := c.BodyParser(&payload); err != nil {
+		log.Printf("Error parsing request body: %v", err)
+		return response.ValidationError(c, "Invalid input, expected JSON with 'username'")
+	}
 
-    var payload request.UpdateUserRequest
-    if err := c.BodyParser(&payload); err != nil {
-        return response.ValidationError(c, "Invalid input, expected JSON with 'username'")
-    }
+	if len(payload.Username) < 3 || len(payload.Username) > 50 {
+		return response.ValidationError(c, "Username must be between 3 and 50 characters")
+	}
 
-    if len(payload.Username) < 3 || len(payload.Username) > 50 {
-        return response.ValidationError(c, "Username must be between 3 and 50 characters")
-    }
+	updatedUser := domain.User{
+		ID:        user.ID,
+		Name:      payload.Username,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
 
-    updatedUser := domain.User{
-        ID:        user.ID,
-        Name:      payload.Username,
-        Email:     user.Email,
-        CreatedAt: user.CreatedAt,
-    }
+	updatedUser, err = h.userService.UpdateUser(user.ID, updatedUser)
+	if err != nil {
+		log.Printf("Error updating user: %v", err)
+		return response.Error(c.Status(fiber.StatusInternalServerError), fmt.Sprintf("Error updating user: %v", err))
+	}
 
-    updatedUser, err = h.userService.UpdateUser(user.ID, updatedUser)
-    if err != nil {
-        return response.Error(c.Status(fiber.StatusInternalServerError), fmt.Sprintf("Error updating user: %v", err))
-    }
-
-    userResponse := domain.UserResponse{
-        ID:        updatedUser.ID,
-        Username:  updatedUser.Name,
-        Email:     updatedUser.Email,
-        CreatedAt: updatedUser.CreatedAt,
-        UpdatedAt: updatedUser.UpdatedAt,
-    }
-
-    return response.Success(c, userResponse)
+	return response.Success(c, mapToUserResponse(updatedUser))
 }
 
+// DeleteUser godoc
+// @Summary Delete a user
+// @Description Delete a user by their ID. Only the authenticated user can delete their own account.
+// @Tags users
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Success 200 {object} response.DeleteUserResponse "User deleted successfully"
+// @Failure 400 {object} response.ErrorResponse "Bad request"
+// @Failure 401 {object} response.ErrorResponse "Unauthorized"
+// @Failure 404 {object} response.ErrorResponse "User not found"
+// @Router /api/users/{id} [delete]
 func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
-	userID, err := parseUserID(c)
-	if err != nil {
-		return response.Error(c, err.Error(), fiber.StatusBadRequest)
+	userID := c.Params("id")
+	if userID == "" {
+		log.Printf("Error parsing user ID: %v", userID)
+		return response.Error(c, "Invalid user ID", fiber.StatusBadRequest)
 	}
 
 	authenticatedUserID := c.Locals("userID").(string)
-
 	if authenticatedUserID != userID {
+		log.Printf("Unauthorized attempt to delete user: %v", authenticatedUserID)
 		return response.Error(c, "You are not authorized to delete this user", fiber.StatusForbidden)
 	}
 
 	if err := h.userService.DeleteUser(userID); err != nil {
+		log.Printf("Error deleting user: %v", err)
 		return response.Error(c, "User not found", fiber.StatusNotFound)
 	}
 
@@ -191,7 +195,7 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 
 // SearchUsers godoc
 // @Summary Search users
-// @Description Search for users by their name or email. The response includes users matching the provided query.
+// @Description Search for users by their name or email.
 // @Tags search
 // @Produce json
 // @Param query query string true "Search query"
@@ -200,32 +204,25 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /api/search/users [get]
 func (h *UserHandler) SearchUsers(c *fiber.Ctx) error {
-    query := c.Query("query")
+	query := c.Query("query")
+	if query == "" {
+		return response.Error(c, "Query parameter is required", fiber.StatusBadRequest)
+	}
 
-    if query == "" {
-        return response.Error(c, "Query parameter is required", fiber.StatusBadRequest)
-    }
-    
-    fmt.Println("Received search query:", query)
+	log.Printf("Received search query: %s", query)
 
-    users, err := h.userService.SearchUsers(query)
-    if err != nil {
-        if err.Error() == "no users found" {
-            return response.Error(c, "No users found for the given search query", fiber.StatusNotFound)
-        }
-        return response.Error(c, err.Error(), fiber.StatusInternalServerError)
-    }
+	users, err := h.userService.SearchUsers(query)
+	if err != nil {
+		if err.Error() == "no users found" {
+			return response.Error(c, "No users found for the given search query", fiber.StatusNotFound)
+		}
+		return response.Error(c, err.Error(), fiber.StatusInternalServerError)
+	}
 
-    var userResponses []domain.UserResponse
-    for _, user := range users {
-        userResponses = append(userResponses, domain.UserResponse{
-            ID:        user.ID,
-            Username:  user.Name,
-            Email:     user.Email,
-            CreatedAt: user.CreatedAt,
-            UpdatedAt: user.UpdatedAt,
-        })
-    }
+	var userResponses []domain.UserResponse
+	for _, user := range users {
+		userResponses = append(userResponses, mapToUserResponse(user))
+	}
 
-    return response.Success(c, userResponses)
+	return response.Success(c, userResponses)
 }
