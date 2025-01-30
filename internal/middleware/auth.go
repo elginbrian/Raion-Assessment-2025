@@ -3,7 +3,7 @@ package middleware
 import (
 	"errors"
 	"log"
-	"raion-battlepass/pkg/response"
+	"raion-assessment/pkg/response"
 	"strings"
 	"time"
 

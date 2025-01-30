@@ -1,9 +1,9 @@
 package di
 
 import (
-	"raion-battlepass/internal/handler"
-	"raion-battlepass/internal/repository"
-	"raion-battlepass/internal/service"
+	"raion-assessment/internal/handler"
+	"raion-assessment/internal/repository"
+	"raion-assessment/internal/service"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )

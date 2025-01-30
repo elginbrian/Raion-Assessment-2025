@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	migrations "raion-battlepass/db/migrations"
+	migrations "raion-assessment/db/migrations"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )

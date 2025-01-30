@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"raion-battlepass/config"
-	"raion-battlepass/internal/handler"
-	"raion-battlepass/internal/middleware"
+	"raion-assessment/config"
+	"raion-assessment/internal/handler"
+	"raion-assessment/internal/middleware"
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"

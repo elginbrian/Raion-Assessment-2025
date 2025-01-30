@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
-	"raion-battlepass/internal/domain"
+	"raion-assessment/internal/domain"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"

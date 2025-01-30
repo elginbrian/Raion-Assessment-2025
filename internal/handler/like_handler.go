@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"raion-battlepass/internal/domain"
-	"raion-battlepass/internal/service"
-	"raion-battlepass/pkg/response"
+	"raion-assessment/internal/domain"
+	"raion-assessment/internal/service"
+	"raion-assessment/pkg/response"
 
 	"github.com/gofiber/fiber/v2"
 )

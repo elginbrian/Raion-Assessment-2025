@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"log"
-	"raion-battlepass/config"
-	"raion-battlepass/internal/di"
-	"raion-battlepass/internal/routes"
+	"raion-assessment/config"
+	"raion-assessment/internal/di"
+	"raion-assessment/internal/routes"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,7 +14,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	_ "raion-battlepass/docs"
+	_ "raion-assessment/docs"
 )
 
 // @title RAION ASSESSMENT API

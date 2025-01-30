@@ -2,10 +2,10 @@ package handler
 
 import (
 	"os"
-	"raion-battlepass/internal/domain"
-	"raion-battlepass/internal/service"
-	"raion-battlepass/pkg/request"
-	"raion-battlepass/pkg/response"
+	"raion-assessment/internal/domain"
+	"raion-assessment/internal/service"
+	"raion-assessment/pkg/request"
+	"raion-assessment/pkg/response"
 	"regexp"
 	"strings"
 

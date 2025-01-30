@@ -1,4 +1,4 @@
-module raion-battlepass
+module raion-assessment
 
 go 1.22.0
 

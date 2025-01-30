@@ -6,13 +6,13 @@ services:
       - "8084:8080"
     environment:
       - PORT=8080
-      - DATABASE_URL=postgres://user:password@db:5432/raion-battlepass?sslmode=disable
+      - DATABASE_URL=postgres://user:password@db:5432/raion-assessment?sslmode=disable
     depends_on:
       - db
     networks:
-      - raion-battlepass-network
+      - raion-assessment-network
     command: >
-      sh -c "./raion-battlepass"
+      sh -c "./raion-assessment"
     volumes:
       - ./public/uploads:/app/public/uploads
       - ./cmd:/app/cmd
@@ -23,19 +23,19 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: raion-battlepass
+      POSTGRES_DB: raion-assessment
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
-      - raion-battlepass-network
+      - raion-assessment-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d raion-battlepass"]
+      test: ["CMD-SHELL", "pg_isready -U user -d raion-assessment"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 networks:
-  raion-battlepass-network:
+  raion-assessment-network:
     driver: bridge
 
 volumes:

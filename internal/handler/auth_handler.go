@@ -2,9 +2,9 @@ package handler
 
 import (
 	"log"
-	"raion-battlepass/internal/service"
-	"raion-battlepass/pkg/request"
-	"raion-battlepass/pkg/response"
+	"raion-assessment/internal/service"
+	"raion-assessment/pkg/request"
+	"raion-assessment/pkg/response"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"

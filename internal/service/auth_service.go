@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"errors"
-	"raion-battlepass/internal/domain"
-	"raion-battlepass/internal/repository"
+	"raion-assessment/internal/domain"
+	"raion-assessment/internal/repository"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"

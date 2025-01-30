@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine as builder
+FROM golang:1.23-alpine as builder 
 
 RUN apk add --no-cache git bash
 
@@ -15,7 +15,7 @@ COPY db/migrations /app/db/migrations
 
 COPY public/ /app/public/
 
-RUN go build -mod=vendor -o /app/raion-battlepass ./cmd/main.go
+RUN go build -mod=vendor -o /app/raion-assessment ./cmd/main.go
 
 FROM alpine:latest
 
@@ -23,8 +23,8 @@ WORKDIR /app
 
 RUN apk add --no-cache bash
 
-COPY --from=builder /app/raion-battlepass /app/raion-battlepass
+COPY --from=builder /app/raion-assessment /app/raion-assessment
 
 EXPOSE 8080
 
-CMD ["/app/raion-battlepass"]
+CMD ["/app/raion-assessment"]

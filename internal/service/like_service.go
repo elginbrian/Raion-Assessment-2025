@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"raion-battlepass/internal/domain"
-	"raion-battlepass/internal/repository"
+	"raion-assessment/internal/domain"
+	"raion-assessment/internal/repository"
 )
 
 type LikeService interface {
