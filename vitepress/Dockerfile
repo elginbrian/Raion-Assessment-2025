@@ -1,20 +1,13 @@
-# Use Node.js image
 FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy Vitepress files
 COPY . .
 
-# Install dependencies and build the site
-RUN npm install && npm run build
+RUN npm install vitepress --save-dev
 
-# Use a lightweight HTTP server to serve static files
-RUN npm install -g serve
+RUN npm install
 
-# Expose HTTP server port
-EXPOSE 5000
+EXPOSE 5173
 
-# Command to serve the built site
-CMD ["serve", "-s", "docs/.vitepress/dist", "-l", "5000"]
+CMD ["npm", "run", "docs:dev", "--", "--host"]
