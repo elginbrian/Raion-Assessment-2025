@@ -25,6 +25,13 @@ definitions:
     - new_password
     - old_password
     type: object
+  request.CreateCommentRequest:
+    properties:
+      content:
+        type: string
+    required:
+    - content
+    type: object
   request.UpdatePostRequest:
     properties:
       caption:
@@ -71,10 +78,37 @@ definitions:
       message:
         type: string
     type: object
+  response.Comment:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      post_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  response.CreateCommentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.Comment'
+      status:
+        type: string
+    type: object
   response.CreatePostResponse:
     properties:
       data:
         $ref: '#/definitions/response.Post'
+      status:
+        type: string
+    type: object
+  response.DeleteCommentResponse:
+    properties:
       status:
         type: string
     type: object
@@ -106,6 +140,15 @@ definitions:
       data:
         items:
           $ref: '#/definitions/response.User'
+        type: array
+      status:
+        type: string
+    type: object
+  response.GetCommentsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.Comment'
         type: array
       status:
         type: string
@@ -206,18 +249,14 @@ definitions:
       username:
         type: string
     type: object
-host: raion-battlepass.elginbrian.com
+host: localhost:8084
 info:
   contact: {}
   description: This is a RESTful API for a simple social media application. It allows
     users to manage their posts, including creating, updating, and deleting posts,
     and provides authentication using JWT. The API is built using the Fiber framework
     and interacts with a PostgreSQL database.
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-  termsOfService: http://swagger.io/terms/
-  title: RAION BATTLEPASS API
+  title: RAION ASSESSMENT API
   version: "1.0"
 paths:
   /api/auth/change-password:
@@ -298,7 +337,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Successful registration response
+          description: Successful login response
           schema:
             $ref: '#/definitions/response.LoginResponse'
         "400":
@@ -344,6 +383,34 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /api/comments/{id}:
+    delete:
+      description: Delete a comment by its ID. Only the comment creator can delete
+        it. Requires authentication.
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Successful deletion response
+          schema:
+            $ref: '#/definitions/response.DeleteCommentResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a comment
+      tags:
+      - comments
   /api/posts:
     get:
       description: Get a list of all posts, along with details like the user who created
@@ -494,6 +561,71 @@ paths:
       summary: Update an existing post's caption
       tags:
       - posts
+  /api/posts/{post_id}/comments:
+    get:
+      description: Retrieve all comments related to a specific post.
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of comments
+          schema:
+            items:
+              $ref: '#/definitions/response.GetCommentsResponse'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get comments for a post
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Create a comment for a post. Requires authentication.
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Comment request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created comment response
+          schema:
+            $ref: '#/definitions/response.CreateCommentResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new comment
+      tags:
+      - comments
   /api/posts/user/{user_id}:
     get:
       description: Get all posts made by a specific user, including the caption, image
@@ -550,8 +682,7 @@ paths:
       - search
   /api/search/users:
     get:
-      description: Search for users by their name or email. The response includes
-        users matching the provided query.
+      description: Search for users by their name or email.
       parameters:
       - description: Search query
         in: query
@@ -580,9 +711,7 @@ paths:
       - search
   /api/users:
     get:
-      description: Retrieve a list of all users from the database, including their
-        usernames, emails, and timestamps for when their accounts were created or
-        updated.
+      description: Retrieve a list of all users from the database.
       produces:
       - application/json
       responses:
@@ -590,10 +719,6 @@ paths:
           description: Successful fetch users response
           schema:
             $ref: '#/definitions/response.GetAllUsersResponse'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -604,10 +729,9 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update the username of the authenticated user. The user must include
-        their JWT token in the Authorization header.
+      description: Update the username of the authenticated user.
       parameters:
-      - description: Request body with updated username
+      - description: Updated username
         in: body
         name: request
         required: true
@@ -621,7 +745,7 @@ paths:
           schema:
             $ref: '#/definitions/response.UpdateUserResponse'
         "400":
-          description: Bad request
+          description: Validation error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "401":
@@ -639,8 +763,7 @@ paths:
       - users
   /api/users/{id}:
     get:
-      description: Retrieve the details of a specific user by their ID. The response
-        includes the user's username, email, and account timestamps.
+      description: Retrieve the details of a specific user by their ID.
       parameters:
       - description: User ID
         in: path
@@ -654,10 +777,6 @@ paths:
           description: Successful fetch user by ID response
           schema:
             $ref: '#/definitions/response.GetUserByIDResponse'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:

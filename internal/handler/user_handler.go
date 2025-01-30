@@ -77,38 +77,6 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 	return response.Success(c, mapToUserResponse(user))
 }
 
-// CreateUser godoc
-// @Summary Create a new user
-// @Description Create a new user in the database.
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param request body request.CreateUserRequest true "User details"
-// @Success 201 {object} response.CreateUserResponse "User created successfully"
-// @Failure 400 {object} response.ErrorResponse "Validation error"
-// @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/users [post]
-func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
-	var user domain.User
-	if err := c.BodyParser(&user); err != nil {
-		log.Printf("Error parsing request body: %v", err)
-		return response.ValidationError(c, "Invalid input")
-	}
-
-	if err := response.ValidateStruct(user); err != nil {
-		log.Printf("Validation error: %v", err)
-		return response.ValidationError(c, fmt.Sprintf("Validation error: %v", err))
-	}
-
-	createdUser, err := h.userService.CreateUser(user)
-	if err != nil {
-		log.Printf("Error creating user: %v", err)
-		return response.Error(c, err.Error())
-	}
-
-	return response.Success(c.Status(fiber.StatusCreated), mapToUserResponse(createdUser))
-}
-
 // UpdateUser godoc
 // @Summary Update user information
 // @Description Update the username of the authenticated user.
@@ -159,38 +127,6 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, mapToUserResponse(updatedUser))
-}
-
-// DeleteUser godoc
-// @Summary Delete a user
-// @Description Delete a user by their ID. Only the authenticated user can delete their own account.
-// @Tags users
-// @Security BearerAuth
-// @Param id path string true "User ID"
-// @Success 200 {object} response.DeleteUserResponse "User deleted successfully"
-// @Failure 400 {object} response.ErrorResponse "Bad request"
-// @Failure 401 {object} response.ErrorResponse "Unauthorized"
-// @Failure 404 {object} response.ErrorResponse "User not found"
-// @Router /api/users/{id} [delete]
-func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
-	userID := c.Params("id")
-	if userID == "" {
-		log.Printf("Error parsing user ID: %v", userID)
-		return response.Error(c, "Invalid user ID", fiber.StatusBadRequest)
-	}
-
-	authenticatedUserID := c.Locals("userID").(string)
-	if authenticatedUserID != userID {
-		log.Printf("Unauthorized attempt to delete user: %v", authenticatedUserID)
-		return response.Error(c, "You are not authorized to delete this user", fiber.StatusForbidden)
-	}
-
-	if err := h.userService.DeleteUser(userID); err != nil {
-		log.Printf("Error deleting user: %v", err)
-		return response.Error(c, "User not found", fiber.StatusNotFound)
-	}
-
-	return response.Success(c, "User deleted successfully")
 }
 
 // SearchUsers godoc

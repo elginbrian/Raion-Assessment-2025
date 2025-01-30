@@ -9,7 +9,6 @@ services:
       - DATABASE_URL=postgres://user:password@db:5432/raion-battlepass?sslmode=disable
     depends_on:
       - db
-      - vp
     networks:
       - raion-battlepass-network
     command: >
@@ -17,19 +16,6 @@ services:
     volumes:
       - ./public/uploads:/app/public/uploads
       - ./cmd:/app/cmd
-
-  vp:
-    build:
-      context: ./vitepress
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "5173:5173"
-    networks:
-      - raion-battlepass-network
-    volumes:
-      - ./vitepress:/app
-      - /app/node_modules
 
   db:
     image: postgres:15

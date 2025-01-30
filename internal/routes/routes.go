@@ -20,11 +20,12 @@ func SetupRoutes(
 	jwtSecret string,
 ) {
 	config.InitMetrics()
-
 	app.Use(config.PrometheusMiddleware)
-
 	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
+	app.Static("/uploads", "./public/uploads")
+
+	app.Get("/", redirectToDocs)
 	app.Get("/api", redirectToDocs)
 	app.Get("/docs", redirectToDocs)
 	app.Get("/docs/*", fiberSwagger.WrapHandler)

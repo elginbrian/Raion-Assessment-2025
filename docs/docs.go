@@ -9,12 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
         "contact": {},
-        "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
-        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -137,7 +132,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Successful registration response",
+                        "description": "Successful login response",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponse"
                         }
@@ -186,6 +181,49 @@ const docTemplate = `{
                         "description": "Successful registration response",
                         "schema": {
                             "$ref": "#/definitions/response.RegisterResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/comments/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a comment by its ID. Only the comment creator can delete it. Requires authentication.",
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Delete a comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful deletion response",
+                        "schema": {
+                            "$ref": "#/definitions/response.DeleteCommentResponse"
                         }
                     },
                     "400": {
@@ -467,6 +505,106 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/posts/{post_id}/comments": {
+            "get": {
+                "description": "Retrieve all comments related to a specific post.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Get comments for a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of comments",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.GetCommentsResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a comment for a post. Requires authentication.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Create a new comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Comment request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateCommentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created comment response",
+                        "schema": {
+                            "$ref": "#/definitions/response.CreateCommentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/search/posts": {
             "get": {
                 "description": "Search for posts that match a given query, such as a keyword in the caption or content.",
@@ -507,7 +645,7 @@ const docTemplate = `{
         },
         "/api/search/users": {
             "get": {
-                "description": "Search for users by their name or email. The response includes users matching the provided query.",
+                "description": "Search for users by their name or email.",
                 "produces": [
                     "application/json"
                 ],
@@ -551,7 +689,7 @@ const docTemplate = `{
         },
         "/api/users": {
             "get": {
-                "description": "Retrieve a list of all users from the database, including their usernames, emails, and timestamps for when their accounts were created or updated.",
+                "description": "Retrieve a list of all users from the database.",
                 "produces": [
                     "application/json"
                 ],
@@ -564,12 +702,6 @@ const docTemplate = `{
                         "description": "Successful fetch users response",
                         "schema": {
                             "$ref": "#/definitions/response.GetAllUsersResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -586,7 +718,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update the username of the authenticated user. The user must include their JWT token in the Authorization header.",
+                "description": "Update the username of the authenticated user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -599,7 +731,7 @@ const docTemplate = `{
                 "summary": "Update user information",
                 "parameters": [
                     {
-                        "description": "Request body with updated username",
+                        "description": "Updated username",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -616,7 +748,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad request",
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -638,7 +770,7 @@ const docTemplate = `{
         },
         "/api/users/{id}": {
             "get": {
-                "description": "Retrieve the details of a specific user by their ID. The response includes the user's username, email, and account timestamps.",
+                "description": "Retrieve the details of a specific user by their ID.",
                 "produces": [
                     "application/json"
                 ],
@@ -660,12 +792,6 @@ const docTemplate = `{
                         "description": "Successful fetch user by ID response",
                         "schema": {
                             "$ref": "#/definitions/response.GetUserByIDResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -713,6 +839,17 @@ const docTemplate = `{
                 "old_password": {
                     "type": "string",
                     "minLength": 6
+                }
+            }
+        },
+        "request.CreateCommentRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
                 }
             }
         },
@@ -784,12 +921,54 @@ const docTemplate = `{
                 }
             }
         },
+        "response.Comment": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "post_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.CreateCommentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/response.Comment"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "response.CreatePostResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "$ref": "#/definitions/response.Post"
                 },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.DeleteCommentResponse": {
+            "type": "object",
+            "properties": {
                 "status": {
                     "type": "string"
                 }
@@ -838,6 +1017,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.User"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.GetCommentsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.Comment"
                     }
                 },
                 "status": {
@@ -1008,10 +1201,10 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "raion-battlepass.elginbrian.com",
+	Host:             "localhost:8084",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "RAION BATTLEPASS API",
+	Title:            "RAION ASSESSMENT API",
 	Description:      "This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

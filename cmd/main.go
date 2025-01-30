@@ -17,19 +17,15 @@ import (
 	_ "raion-battlepass/docs"
 )
 
-// @title RAION BATTLEPASS API
+// @title RAION ASSESSMENT API
 // @version 1.0
 // @description This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.
-// @termsOfService http://swagger.io/terms/
-
-// @license.name MIT
-// @license.url https://opensource.org/licenses/MIT
 
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
 
-// @host raion-battlepass.elginbrian.com
+// @host localhost:8084
 // @BasePath /
 func main() {
 	serverPort := config.GetServerPort()
@@ -60,9 +56,6 @@ func main() {
 	app.Use(cors.New())
 
 	routes.SetupRoutes(app, container.UserHandler, container.AuthHandler, container.PostHandler, container.CommentHandler, jwtSecret)
-
-	app.Static("/uploads", "./public/uploads")
-	app.Static("/", "./cmd")
 
 	log.Printf("Server is running on port %s", serverPort)
 	if err := app.Listen(serverPort); err != nil {
