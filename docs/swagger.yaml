@@ -95,6 +95,8 @@ definitions:
     type: object
   response.CreateCommentResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/response.Comment'
       status:
@@ -102,6 +104,8 @@ definitions:
     type: object
   response.CreatePostResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/response.Post'
       status:
@@ -109,20 +113,33 @@ definitions:
     type: object
   response.DeleteCommentResponse:
     properties:
+      code:
+        type: integer
       message:
         type: string
       status:
         type: string
     type: object
+  response.DeletePostData:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
   response.DeletePostResponse:
     properties:
+      code:
+        type: integer
       data:
-        $ref: '#/definitions/response.RegisterData'
+        $ref: '#/definitions/response.DeletePostData'
       status:
         type: string
     type: object
   response.ErrorResponse:
     properties:
+      code:
+        type: integer
       message:
         type: string
       status:
@@ -130,6 +147,8 @@ definitions:
     type: object
   response.GetAllPostsResponse:
     properties:
+      code:
+        type: integer
       data:
         items:
           $ref: '#/definitions/response.Post'
@@ -139,6 +158,8 @@ definitions:
     type: object
   response.GetAllUsersResponse:
     properties:
+      code:
+        type: integer
       data:
         items:
           $ref: '#/definitions/response.User'
@@ -148,6 +169,8 @@ definitions:
     type: object
   response.GetCommentsResponse:
     properties:
+      code:
+        type: integer
       data:
         items:
           $ref: '#/definitions/response.Comment'
@@ -157,6 +180,8 @@ definitions:
     type: object
   response.GetCurrentUserResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/response.User'
       status:
@@ -164,6 +189,8 @@ definitions:
     type: object
   response.GetPostByIDResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/response.Post'
       status:
@@ -171,6 +198,8 @@ definitions:
     type: object
   response.GetUserByIDResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/response.User'
       status:
@@ -178,6 +207,8 @@ definitions:
     type: object
   response.LikeResponse:
     properties:
+      code:
+        type: integer
       message:
         type: string
       status:
@@ -190,6 +221,8 @@ definitions:
     type: object
   response.LoginResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/response.LoginData'
       status:
@@ -217,6 +250,8 @@ definitions:
     type: object
   response.RegisterResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/response.RegisterData'
       status:
@@ -224,6 +259,8 @@ definitions:
     type: object
   response.SearchPostsResponse:
     properties:
+      code:
+        type: integer
       data:
         items:
           $ref: '#/definitions/response.Post'
@@ -233,6 +270,8 @@ definitions:
     type: object
   response.UpdatePostResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/response.Post'
       status:
@@ -240,6 +279,8 @@ definitions:
     type: object
   response.UpdateUserResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/response.User'
       status:
@@ -258,7 +299,7 @@ definitions:
       username:
         type: string
     type: object
-host: localhost:8084
+host: localhost:8084/api/v1
 info:
   contact: {}
   description: This is a RESTful API for a simple social media application. It allows
@@ -266,9 +307,9 @@ info:
     and provides authentication using JWT. The API is built using the Fiber framework
     and interacts with a PostgreSQL database.
   title: RAION ASSESSMENT API
-  version: "1.0"
+  version: 1.0.0
 paths:
-  /api/auth/change-password:
+  /auth/change-password:
     put:
       consumes:
       - application/json
@@ -302,7 +343,7 @@ paths:
       summary: Change your password
       tags:
       - auth
-  /api/auth/current-user:
+  /auth/current-user:
     get:
       consumes:
       - application/json
@@ -328,7 +369,7 @@ paths:
       summary: Get current user info
       tags:
       - auth
-  /api/auth/login:
+  /auth/login:
     post:
       consumes:
       - application/json
@@ -360,7 +401,7 @@ paths:
       summary: Log in a user
       tags:
       - auth
-  /api/auth/register:
+  /auth/register:
     post:
       consumes:
       - application/json
@@ -392,7 +433,7 @@ paths:
       summary: Register a new user
       tags:
       - auth
-  /api/comments/{id}:
+  /comments/{id}:
     delete:
       description: Delete a comment by its ID. Only the comment creator can delete
         it. Requires authentication.
@@ -420,7 +461,7 @@ paths:
       summary: Delete a comment
       tags:
       - comments
-  /api/posts:
+  /posts:
     get:
       description: Get a list of all posts, along with details like the user who created
         them, the caption, image URL, and timestamps.
@@ -478,7 +519,7 @@ paths:
       summary: Create a new post
       tags:
       - posts
-  /api/posts/{id}:
+  /posts/{id}:
     delete:
       description: Delete a post by its ID. Only the post creator is allowed to delete
         it. Requires JWT authentication.
@@ -570,7 +611,7 @@ paths:
       summary: Update an existing post's caption
       tags:
       - posts
-  /api/posts/{post_id}/comments:
+  /posts/{post_id}/comments:
     get:
       description: Retrieve all comments related to a specific post.
       parameters:
@@ -635,7 +676,7 @@ paths:
       summary: Create a new comment
       tags:
       - comments
-  /api/posts/{post_id}/like:
+  /posts/{post_id}/like:
     post:
       description: Allows a user to like a post. Requires JWT authentication.
       parameters:
@@ -662,7 +703,7 @@ paths:
       summary: Like a post
       tags:
       - likes
-  /api/posts/{post_id}/likes:
+  /posts/{post_id}/likes:
     get:
       description: Fetch all users who liked a specific post
       parameters:
@@ -691,7 +732,7 @@ paths:
       summary: Get all likes for a post
       tags:
       - likes
-  /api/posts/{post_id}/unlike:
+  /posts/{post_id}/unlike:
     post:
       description: Allows a user to remove their like from a post. Requires JWT authentication.
       parameters:
@@ -718,7 +759,7 @@ paths:
       summary: Unlike a post
       tags:
       - likes
-  /api/posts/user/{user_id}:
+  /posts/user/{user_id}:
     get:
       description: Get all posts made by a specific user, including the caption, image
         URL, and timestamps.
@@ -746,7 +787,7 @@ paths:
       summary: Get all posts by a specific user
       tags:
       - posts
-  /api/search/posts:
+  /search/posts:
     get:
       description: Search for posts that match a given query, such as a keyword in
         the caption or content.
@@ -772,7 +813,7 @@ paths:
       summary: Search posts
       tags:
       - search
-  /api/search/users:
+  /search/users:
     get:
       description: Search for users by their name or email.
       parameters:
@@ -801,7 +842,7 @@ paths:
       summary: Search users
       tags:
       - search
-  /api/users:
+  /users:
     get:
       description: Retrieve a list of all users from the database.
       produces:
@@ -853,7 +894,7 @@ paths:
       summary: Update user information
       tags:
       - users
-  /api/users/{id}:
+  /users/{id}:
     get:
       description: Retrieve the details of a specific user by their ID.
       parameters:
@@ -876,7 +917,7 @@ paths:
       summary: Get user details by ID
       tags:
       - users
-  /api/users/{user_id}/likes:
+  /users/{user_id}/likes:
     get:
       description: Fetch all posts liked by a specific user
       parameters:

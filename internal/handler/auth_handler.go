@@ -39,7 +39,7 @@ func extractToken(c *fiber.Ctx) (string, error) {
 // @Success 201 {object} response.RegisterResponse "Successful registration response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/auth/register [post]
+// @Router /auth/register [post]
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req request.UserRegistrationRequest
 
@@ -72,7 +72,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 // @Success 201 {object} response.LoginResponse "Successful login response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/auth/login [post]
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req request.UserLoginRequest
 
@@ -106,7 +106,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 // @Success 200 {object} response.GetCurrentUserResponse "User information retrieved successfully"
 // @Failure 401 {object} response.ErrorResponse "Unauthorized or invalid token"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/auth/current-user [get]
+// @Router /auth/current-user [get]
 func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
 	token, err := extractToken(c)
 	if err != nil {
@@ -139,7 +139,7 @@ func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
 // @Success 200 {object} response.ChangePasswordData "Password changed successfully"
 // @Failure 400 {object} response.ErrorResponse "Validation error or invalid request format"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/auth/change-password [put]
+// @Router /auth/change-password [put]
 func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 	token, err := extractToken(c)
 	if err != nil {

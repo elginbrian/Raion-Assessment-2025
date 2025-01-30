@@ -37,6 +37,14 @@ func SetupRoutes(
 	setupSearchRoutes(app, userHandler, postHandler)
 	setupCommentRoutes(app, commentHandler)
 	setupLikeRoutes(app, likeHandler)  
+
+	app.All("*", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"code": fiber.StatusNotFound,  
+			"status": "error",
+			"message": "The route you requested does not exist. Please check the URL and try again.",
+		})
+	})
 }
 
 func redirectToDocs(c *fiber.Ctx) error {
@@ -44,26 +52,26 @@ func redirectToDocs(c *fiber.Ctx) error {
 }
 
 func setupLikeRoutes(app *fiber.App, handler *handler.LikeHandler) {
-	likeGroup := app.Group("/api/posts")
+	likeGroup := app.Group("/api/v1/posts")
 	likeGroup.Post("/:post_id/like", handler.LikePost)    
 	likeGroup.Post("/:post_id/unlike", handler.UnlikePost) 
 }
 
 func setupSearchRoutes(app *fiber.App, userHandler *handler.UserHandler, postHandler *handler.PostHandler) {
-	searchGroup := app.Group("/api/search")
+	searchGroup := app.Group("/api/v1/search")
 	searchGroup.Get("/users", userHandler.SearchUsers)
 	searchGroup.Get("/posts", postHandler.SearchPosts)
 }
 
 func setupUserRoutes(app *fiber.App, handler *handler.UserHandler) {
-	userGroup := app.Group("/api/users")
+	userGroup := app.Group("/api/v1/users")
 	userGroup.Put("/", handler.UpdateUser)
 	userGroup.Get("/", handler.GetAllUsers)
 	userGroup.Get("/:id", handler.GetUserByID)
 }
 
 func setupAuthRoutes(app *fiber.App, handler *handler.AuthHandler, jwtSecret string) {
-	authGroup := app.Group("/api/auth")
+	authGroup := app.Group("/api/v1/auth")
 	authGroup.Post("/register", handler.Register)
 	authGroup.Post("/login", handler.Login)
 	authGroup.Get("/current-user", handler.GetUserInfo, middleware.TokenValidationMiddleware(jwtSecret))
@@ -71,7 +79,7 @@ func setupAuthRoutes(app *fiber.App, handler *handler.AuthHandler, jwtSecret str
 }
 
 func setupPostRoutes(app *fiber.App, handler *handler.PostHandler) {
-	postGroup := app.Group("/api/posts")
+	postGroup := app.Group("/api/v1/posts")
 	postGroup.Post("/", handler.CreatePost)
 	postGroup.Put("/:id", handler.UpdatePost)
 	postGroup.Delete("/:id", handler.DeletePost)
@@ -81,7 +89,7 @@ func setupPostRoutes(app *fiber.App, handler *handler.PostHandler) {
 }
 
 func setupCommentRoutes(app *fiber.App, handler *handler.CommentHandler) {
-	commentGroup := app.Group("/api/posts/:post_id/comments")
+	commentGroup := app.Group("/api/v1/posts/:post_id/comments")
 	commentGroup.Get("/", handler.GetCommentsByPostID)     
 	commentGroup.Post("/", handler.CreateComment)         
 	commentGroup.Delete("/:id", handler.DeleteComment)    

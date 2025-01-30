@@ -83,7 +83,7 @@ func sanitizeFileName(fileName string) string {
 // @Success 200 {object} response.GetAllPostsResponse "Successful fetch posts response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts [get]
+// @Router /posts [get]
 func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
 	posts, err := h.postService.FetchAllPosts()
 	if err != nil {
@@ -101,7 +101,7 @@ func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
 // @Success 200 {object} response.GetPostByIDResponse "Successful fetch post response" 
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts/{id} [get]
+// @Router /posts/{id} [get]
 func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 	post, err := h.postService.FetchPostByID(id)
@@ -122,7 +122,7 @@ func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {
 // @Success 200 {object} response.GetAllPostsResponse "Successful fetch posts by user response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts/user/{user_id} [get]
+// @Router /posts/user/{user_id} [get]
 func (h *PostHandler) GetPostsByUserID(c *fiber.Ctx) error {
 	userID := c.Params("user_id")
 	posts, err := h.postService.FetchPostsByUserID(userID)
@@ -147,7 +147,7 @@ func (h *PostHandler) GetPostsByUserID(c *fiber.Ctx) error {
 // @Success 201 {object} response.CreatePostResponse "Successful image upload response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts [post]
+// @Router /posts [post]
 func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	user, err := h.extractUserFromToken(c)
 	if err != nil {
@@ -191,7 +191,7 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 // @Success 200 {object} response.UpdatePostResponse "Successful update response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts/{id} [put]
+// @Router /posts/{id} [put]
 func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	user, err := h.extractUserFromToken(c)
 	if err != nil {
@@ -236,7 +236,7 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 // @Success 204 {object} response.DeletePostResponse "Successful delete post response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts/{id} [delete]
+// @Router /posts/{id} [delete]
 func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 	user, err := h.extractUserFromToken(c)
 	if err != nil {
@@ -268,7 +268,7 @@ func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 // @Param query query string true "Search query"
 // @Success 200 {array} response.SearchPostsResponse "Successful search response"
 // @Failure 400 {object} response.ErrorResponse "Invalid query parameter"
-// @Router /api/search/posts [get]
+// @Router /search/posts [get]
 func (h *PostHandler) SearchPosts(c *fiber.Ctx) error {
 	query := c.Query("query")
 	if query == "" {

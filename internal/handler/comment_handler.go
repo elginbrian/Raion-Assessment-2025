@@ -44,7 +44,7 @@ func (h *CommentHandler) handleValidationError(c *fiber.Ctx, err string) error {
 // @Success 200 {array} response.GetCommentsResponse "List of comments"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts/{post_id}/comments [get]
+// @Router /posts/{post_id}/comments [get]
 func (h *CommentHandler) GetCommentsByPostID(c *fiber.Ctx) error {
 	postID := c.Params("post_id")
 
@@ -68,7 +68,7 @@ func (h *CommentHandler) GetCommentsByPostID(c *fiber.Ctx) error {
 // @Success 201 {object} response.CreateCommentResponse "Created comment response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts/{post_id}/comments [post]
+// @Router /posts/{post_id}/comments [post]
 func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 	user, err := h.getUserFromToken(c)
 	if err != nil {
@@ -107,7 +107,7 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 // @Success 204 {object} response.DeleteCommentResponse "Successful deletion response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/comments/{id} [delete]
+// @Router /comments/{id} [delete]
 func (h *CommentHandler) DeleteComment(c *fiber.Ctx) error {
 	user, err := h.getUserFromToken(c)
 	if err != nil {

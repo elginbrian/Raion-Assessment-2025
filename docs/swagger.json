@@ -4,12 +4,12 @@
         "description": "This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.",
         "title": "RAION ASSESSMENT API",
         "contact": {},
-        "version": "1.0"
+        "version": "1.0.0"
     },
-    "host": "localhost:8084",
+    "host": "localhost:8084/api/v1",
     "basePath": "/",
     "paths": {
-        "/api/auth/change-password": {
+        "/auth/change-password": {
             "put": {
                 "security": [
                     {
@@ -60,7 +60,7 @@
                 }
             }
         },
-        "/api/auth/current-user": {
+        "/auth/current-user": {
             "get": {
                 "security": [
                     {
@@ -100,7 +100,7 @@
                 }
             }
         },
-        "/api/auth/login": {
+        "/auth/login": {
             "post": {
                 "description": "Log in to your account by providing your email and password. If the details are correct, you will receive a JWT token to use for secure access to other endpoints.",
                 "consumes": [
@@ -146,7 +146,7 @@
                 }
             }
         },
-        "/api/auth/register": {
+        "/auth/register": {
             "post": {
                 "description": "Create a new account by providing a username, email, and password. The system checks if the details are valid and returns a success message if registration is successful.",
                 "consumes": [
@@ -192,7 +192,7 @@
                 }
             }
         },
-        "/api/comments/{id}": {
+        "/comments/{id}": {
             "delete": {
                 "security": [
                     {
@@ -235,7 +235,7 @@
                 }
             }
         },
-        "/api/posts": {
+        "/posts": {
             "get": {
                 "description": "Get a list of all posts, along with details like the user who created them, the caption, image URL, and timestamps.",
                 "produces": [
@@ -320,7 +320,7 @@
                 }
             }
         },
-        "/api/posts/user/{user_id}": {
+        "/posts/user/{user_id}": {
             "get": {
                 "description": "Get all posts made by a specific user, including the caption, image URL, and timestamps.",
                 "produces": [
@@ -361,7 +361,7 @@
                 }
             }
         },
-        "/api/posts/{id}": {
+        "/posts/{id}": {
             "get": {
                 "description": "Get a post by its unique ID, including the caption, image URL, and timestamps.",
                 "produces": [
@@ -499,7 +499,7 @@
                 }
             }
         },
-        "/api/posts/{post_id}/comments": {
+        "/posts/{post_id}/comments": {
             "get": {
                 "description": "Retrieve all comments related to a specific post.",
                 "produces": [
@@ -599,7 +599,7 @@
                 }
             }
         },
-        "/api/posts/{post_id}/like": {
+        "/posts/{post_id}/like": {
             "post": {
                 "security": [
                     {
@@ -642,7 +642,7 @@
                 }
             }
         },
-        "/api/posts/{post_id}/likes": {
+        "/posts/{post_id}/likes": {
             "get": {
                 "description": "Fetch all users who liked a specific post",
                 "produces": [
@@ -686,7 +686,7 @@
                 }
             }
         },
-        "/api/posts/{post_id}/unlike": {
+        "/posts/{post_id}/unlike": {
             "post": {
                 "security": [
                     {
@@ -729,7 +729,7 @@
                 }
             }
         },
-        "/api/search/posts": {
+        "/search/posts": {
             "get": {
                 "description": "Search for posts that match a given query, such as a keyword in the caption or content.",
                 "produces": [
@@ -767,7 +767,7 @@
                 }
             }
         },
-        "/api/search/users": {
+        "/search/users": {
             "get": {
                 "description": "Search for users by their name or email.",
                 "produces": [
@@ -811,7 +811,7 @@
                 }
             }
         },
-        "/api/users": {
+        "/users": {
             "get": {
                 "description": "Retrieve a list of all users from the database.",
                 "produces": [
@@ -892,7 +892,7 @@
                 }
             }
         },
-        "/api/users/{id}": {
+        "/users/{id}": {
             "get": {
                 "description": "Retrieve the details of a specific user by their ID.",
                 "produces": [
@@ -927,7 +927,7 @@
                 }
             }
         },
-        "/api/users/{user_id}/likes": {
+        "/users/{user_id}/likes": {
             "get": {
                 "description": "Fetch all posts liked by a specific user",
                 "produces": [
@@ -1115,6 +1115,9 @@
         "response.CreateCommentResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.Comment"
                 },
@@ -1126,6 +1129,9 @@
         "response.CreatePostResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.Post"
                 },
@@ -1137,6 +1143,9 @@
         "response.DeleteCommentResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -1145,11 +1154,25 @@
                 }
             }
         },
+        "response.DeletePostData": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "response.DeletePostResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
-                    "$ref": "#/definitions/response.RegisterData"
+                    "$ref": "#/definitions/response.DeletePostData"
                 },
                 "status": {
                     "type": "string"
@@ -1159,6 +1182,9 @@
         "response.ErrorResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -1170,6 +1196,9 @@
         "response.GetAllPostsResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -1184,6 +1213,9 @@
         "response.GetAllUsersResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -1198,6 +1230,9 @@
         "response.GetCommentsResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -1212,6 +1247,9 @@
         "response.GetCurrentUserResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.User"
                 },
@@ -1223,6 +1261,9 @@
         "response.GetPostByIDResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.Post"
                 },
@@ -1234,6 +1275,9 @@
         "response.GetUserByIDResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.User"
                 },
@@ -1245,6 +1289,9 @@
         "response.LikeResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -1264,6 +1311,9 @@
         "response.LoginResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.LoginData"
                 },
@@ -1306,6 +1356,9 @@
         "response.RegisterResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.RegisterData"
                 },
@@ -1317,6 +1370,9 @@
         "response.SearchPostsResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -1331,6 +1387,9 @@
         "response.UpdatePostResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.Post"
                 },
@@ -1342,6 +1401,9 @@
         "response.UpdateUserResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.User"
                 },

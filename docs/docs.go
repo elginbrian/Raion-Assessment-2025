@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/auth/change-password": {
+        "/auth/change-password": {
             "put": {
                 "security": [
                     {
@@ -66,7 +66,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/auth/current-user": {
+        "/auth/current-user": {
             "get": {
                 "security": [
                     {
@@ -106,7 +106,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/auth/login": {
+        "/auth/login": {
             "post": {
                 "description": "Log in to your account by providing your email and password. If the details are correct, you will receive a JWT token to use for secure access to other endpoints.",
                 "consumes": [
@@ -152,7 +152,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/auth/register": {
+        "/auth/register": {
             "post": {
                 "description": "Create a new account by providing a username, email, and password. The system checks if the details are valid and returns a success message if registration is successful.",
                 "consumes": [
@@ -198,7 +198,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/comments/{id}": {
+        "/comments/{id}": {
             "delete": {
                 "security": [
                     {
@@ -241,7 +241,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/posts": {
+        "/posts": {
             "get": {
                 "description": "Get a list of all posts, along with details like the user who created them, the caption, image URL, and timestamps.",
                 "produces": [
@@ -326,7 +326,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/posts/user/{user_id}": {
+        "/posts/user/{user_id}": {
             "get": {
                 "description": "Get all posts made by a specific user, including the caption, image URL, and timestamps.",
                 "produces": [
@@ -367,7 +367,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/posts/{id}": {
+        "/posts/{id}": {
             "get": {
                 "description": "Get a post by its unique ID, including the caption, image URL, and timestamps.",
                 "produces": [
@@ -505,7 +505,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/posts/{post_id}/comments": {
+        "/posts/{post_id}/comments": {
             "get": {
                 "description": "Retrieve all comments related to a specific post.",
                 "produces": [
@@ -605,7 +605,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/posts/{post_id}/like": {
+        "/posts/{post_id}/like": {
             "post": {
                 "security": [
                     {
@@ -648,7 +648,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/posts/{post_id}/likes": {
+        "/posts/{post_id}/likes": {
             "get": {
                 "description": "Fetch all users who liked a specific post",
                 "produces": [
@@ -692,7 +692,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/posts/{post_id}/unlike": {
+        "/posts/{post_id}/unlike": {
             "post": {
                 "security": [
                     {
@@ -735,7 +735,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/search/posts": {
+        "/search/posts": {
             "get": {
                 "description": "Search for posts that match a given query, such as a keyword in the caption or content.",
                 "produces": [
@@ -773,7 +773,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/search/users": {
+        "/search/users": {
             "get": {
                 "description": "Search for users by their name or email.",
                 "produces": [
@@ -817,7 +817,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users": {
+        "/users": {
             "get": {
                 "description": "Retrieve a list of all users from the database.",
                 "produces": [
@@ -898,7 +898,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/{id}": {
+        "/users/{id}": {
             "get": {
                 "description": "Retrieve the details of a specific user by their ID.",
                 "produces": [
@@ -933,7 +933,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/{user_id}/likes": {
+        "/users/{user_id}/likes": {
             "get": {
                 "description": "Fetch all posts liked by a specific user",
                 "produces": [
@@ -1121,6 +1121,9 @@ const docTemplate = `{
         "response.CreateCommentResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.Comment"
                 },
@@ -1132,6 +1135,9 @@ const docTemplate = `{
         "response.CreatePostResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.Post"
                 },
@@ -1143,6 +1149,9 @@ const docTemplate = `{
         "response.DeleteCommentResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -1151,11 +1160,25 @@ const docTemplate = `{
                 }
             }
         },
+        "response.DeletePostData": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "response.DeletePostResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
-                    "$ref": "#/definitions/response.RegisterData"
+                    "$ref": "#/definitions/response.DeletePostData"
                 },
                 "status": {
                     "type": "string"
@@ -1165,6 +1188,9 @@ const docTemplate = `{
         "response.ErrorResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -1176,6 +1202,9 @@ const docTemplate = `{
         "response.GetAllPostsResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -1190,6 +1219,9 @@ const docTemplate = `{
         "response.GetAllUsersResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -1204,6 +1236,9 @@ const docTemplate = `{
         "response.GetCommentsResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -1218,6 +1253,9 @@ const docTemplate = `{
         "response.GetCurrentUserResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.User"
                 },
@@ -1229,6 +1267,9 @@ const docTemplate = `{
         "response.GetPostByIDResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.Post"
                 },
@@ -1240,6 +1281,9 @@ const docTemplate = `{
         "response.GetUserByIDResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.User"
                 },
@@ -1251,6 +1295,9 @@ const docTemplate = `{
         "response.LikeResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -1270,6 +1317,9 @@ const docTemplate = `{
         "response.LoginResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.LoginData"
                 },
@@ -1312,6 +1362,9 @@ const docTemplate = `{
         "response.RegisterResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.RegisterData"
                 },
@@ -1323,6 +1376,9 @@ const docTemplate = `{
         "response.SearchPostsResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -1337,6 +1393,9 @@ const docTemplate = `{
         "response.UpdatePostResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.Post"
                 },
@@ -1348,6 +1407,9 @@ const docTemplate = `{
         "response.UpdateUserResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/response.User"
                 },
@@ -1388,8 +1450,8 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8084",
+	Version:          "1.0.0",
+	Host:             "localhost:8084/api/v1",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "RAION ASSESSMENT API",

@@ -18,14 +18,14 @@ import (
 )
 
 // @title RAION ASSESSMENT API
-// @version 1.0
+// @version 1.0.0
 // @description This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.
 
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
 
-// @host localhost:8084
+// @host localhost:8084/api/v1
 // @BasePath /
 func main() {
 	serverPort := config.GetServerPort()

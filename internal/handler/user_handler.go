@@ -40,7 +40,7 @@ func mapToUserResponse(user domain.User) domain.UserResponse {
 // @Produce json
 // @Success 200 {object} response.GetAllUsersResponse "Successful fetch users response"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/users [get]
+// @Router /users [get]
 func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 	users, err := h.userService.FetchAllUsers()
 	if err != nil {
@@ -64,7 +64,7 @@ func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 // @Param id path string true "User ID"
 // @Success 200 {object} response.GetUserByIDResponse "Successful fetch user by ID response"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/users/{id} [get]
+// @Router /users/{id} [get]
 func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -89,7 +89,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 // @Failure 400 {object} response.ErrorResponse "Validation error"
 // @Failure 401 {object} response.ErrorResponse "Unauthorized or invalid token"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/users [put]
+// @Router /users [put]
 func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	token, err := extractToken(c)
 	if err != nil {
@@ -138,7 +138,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 // @Success 200 {array} domain.UserResponse "Successful search response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/search/users [get]
+// @Router /search/users [get]
 func (h *UserHandler) SearchUsers(c *fiber.Ctx) error {
 	query := c.Query("query")
 	if query == "" {

@@ -39,7 +39,7 @@ func (h *LikeHandler) extractUserFromToken(c *fiber.Ctx) (*domain.User, error) {
 // @Success 200 {object} response.LikeResponse "Successfully liked post"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts/{post_id}/like [post]
+// @Router /posts/{post_id}/like [post]
 func (h *LikeHandler) LikePost(c *fiber.Ctx) error {
 	user, err := h.extractUserFromToken(c)
 	if err != nil {
@@ -68,7 +68,7 @@ func (h *LikeHandler) LikePost(c *fiber.Ctx) error {
 // @Success 200 {object} response.LikeResponse "Successfully unliked post"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts/{post_id}/unlike [post]
+// @Router /posts/{post_id}/unlike [post]
 func (h *LikeHandler) UnlikePost(c *fiber.Ctx) error {
 	user, err := h.extractUserFromToken(c)
 	if err != nil {
@@ -97,7 +97,7 @@ func (h *LikeHandler) UnlikePost(c *fiber.Ctx) error {
 // @Success 200 {array} response.LikeResponse "List of users who liked the post"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/posts/{post_id}/likes [get]
+// @Router /posts/{post_id}/likes [get]
 func (h *LikeHandler) GetLikesByPostID(c *fiber.Ctx) error {
 	postID := c.Params("post_id")
 	if postID == "" {
@@ -121,7 +121,7 @@ func (h *LikeHandler) GetLikesByPostID(c *fiber.Ctx) error {
 // @Success 200 {array} response.LikeResponse "List of posts liked by the user"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /api/users/{user_id}/likes [get]
+// @Router /users/{user_id}/likes [get]
 func (h *LikeHandler) GetLikesByUserID(c *fiber.Ctx) error {
 	userID := c.Params("user_id")
 	if userID == "" {
