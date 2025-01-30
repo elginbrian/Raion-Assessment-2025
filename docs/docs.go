@@ -605,6 +605,136 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/posts/{post_id}/like": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows a user to like a post. Requires JWT authentication.",
+                "tags": [
+                    "likes"
+                ],
+                "summary": "Like a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully liked post",
+                        "schema": {
+                            "$ref": "#/definitions/response.LikeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/posts/{post_id}/likes": {
+            "get": {
+                "description": "Fetch all users who liked a specific post",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "likes"
+                ],
+                "summary": "Get all likes for a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of users who liked the post",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.LikeResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/posts/{post_id}/unlike": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows a user to remove their like from a post. Requires JWT authentication.",
+                "tags": [
+                    "likes"
+                ],
+                "summary": "Unlike a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully unliked post",
+                        "schema": {
+                            "$ref": "#/definitions/response.LikeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/search/posts": {
             "get": {
                 "description": "Search for posts that match a given query, such as a keyword in the caption or content.",
@@ -802,6 +932,50 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/users/{user_id}/likes": {
+            "get": {
+                "description": "Fetch all posts liked by a specific user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "likes"
+                ],
+                "summary": "Get all likes by a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of posts liked by the user",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.LikeResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -969,6 +1143,9 @@ const docTemplate = `{
         "response.DeleteCommentResponse": {
             "type": "object",
             "properties": {
+                "message": {
+                    "type": "string"
+                },
                 "status": {
                     "type": "string"
                 }
@@ -1065,6 +1242,17 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/response.User"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.LikeResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"

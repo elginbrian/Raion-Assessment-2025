@@ -55,7 +55,7 @@ func main() {
 	app.Use(logger.New())
 	app.Use(cors.New())
 
-	routes.SetupRoutes(app, container.UserHandler, container.AuthHandler, container.PostHandler, container.CommentHandler, jwtSecret)
+	routes.SetupRoutes(app, container.UserHandler, container.AuthHandler, container.PostHandler, container.CommentHandler, container.LikeHandler, jwtSecret)
 
 	log.Printf("Server is running on port %s", serverPort)
 	if err := app.Listen(serverPort); err != nil {

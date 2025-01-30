@@ -14,6 +14,7 @@ type CreateCommentResponse struct {
 
 type DeleteCommentResponse struct {
 	Status string `json:"status"`
+    Message string `json:"message"`
 }
 
 type Comment struct {

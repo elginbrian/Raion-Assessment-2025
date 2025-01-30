@@ -16,7 +16,8 @@ func SetupRoutes(
 	userHandler *handler.UserHandler,
 	authHandler *handler.AuthHandler,
 	postHandler *handler.PostHandler,
-	commentHandler *handler.CommentHandler, 
+	commentHandler *handler.CommentHandler,
+	likeHandler *handler.LikeHandler, 
 	jwtSecret string,
 ) {
 	config.InitMetrics()
@@ -35,10 +36,17 @@ func SetupRoutes(
 	setupPostRoutes(app, postHandler)
 	setupSearchRoutes(app, userHandler, postHandler)
 	setupCommentRoutes(app, commentHandler)
+	setupLikeRoutes(app, likeHandler)  
 }
 
 func redirectToDocs(c *fiber.Ctx) error {
 	return c.Redirect("/docs/index.html")
+}
+
+func setupLikeRoutes(app *fiber.App, handler *handler.LikeHandler) {
+	likeGroup := app.Group("/api/posts")
+	likeGroup.Post("/:post_id/like", handler.LikePost)    
+	likeGroup.Post("/:post_id/unlike", handler.UnlikePost) 
 }
 
 func setupSearchRoutes(app *fiber.App, userHandler *handler.UserHandler, postHandler *handler.PostHandler) {

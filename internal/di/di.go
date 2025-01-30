@@ -13,6 +13,7 @@ type Container struct {
 	AuthHandler    *handler.AuthHandler
 	PostHandler    *handler.PostHandler
 	CommentHandler *handler.CommentHandler
+	LikeHandler    *handler.LikeHandler
 }
 
 func NewContainer(db *pgxpool.Pool, jwtSecret string) *Container {
@@ -21,23 +22,27 @@ func NewContainer(db *pgxpool.Pool, jwtSecret string) *Container {
 	authRepo := repository.NewAuthRepository(db)
 	postRepo := repository.NewPostRepository(db)
 	commentRepo := repository.NewCommentRepository(db) 
+	likeRepo := repository.NewLikeRepository(db) 
 
 	// Services
 	userService := service.NewUserService(userRepo)
 	authService := service.NewAuthService(authRepo, userRepo, jwtSecret)
 	postService := service.NewPostService(postRepo) 
 	commentService := service.NewCommentService(commentRepo)
+	likeService := service.NewLikeService(likeRepo)
 
 	// Handlers
 	userHandler := handler.NewUserHandler(userService, authService)
 	authHandler := handler.NewAuthHandler(authService)
 	postHandler := handler.NewPostHandler(postService, authService) 
 	commentHandler := handler.NewCommentHandler(commentService, authService)
+	likeHandler := handler.NewLikeHandler(likeService, authService)
 
 	return &Container{
 		UserHandler: userHandler,
 		AuthHandler: authHandler,
 		PostHandler: postHandler, 
 		CommentHandler: commentHandler,
+		LikeHandler: likeHandler,
 	}
 }

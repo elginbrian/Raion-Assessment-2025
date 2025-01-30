@@ -16,6 +16,7 @@ func RunSQLMigrations(db *pgxpool.Pool) error {
 		migrations.CreatePostsTable,
 		migrations.InsertPostsData,
 		migrations.CreateCommentsTable,
+		migrations.CreateLikesTable,
 	}
 
 	for i, migration := range Migrations {
