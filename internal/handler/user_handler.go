@@ -3,27 +3,27 @@ package handler
 import (
 	"fmt"
 	"log"
-	"raion-assessment/internal/domain"
-	"raion-assessment/internal/service"
-	"raion-assessment/pkg/request"
+	"os"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
 	"raion-assessment/pkg/response"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type UserHandler struct {
-	userService service.UserService
-	authService service.AuthService
+	userService contract.IUserService
+	authService contract.IAuthService
 }
 
-func NewUserHandler(userService service.UserService, authService service.AuthService) *UserHandler {
+func NewUserHandler(userService contract.IUserService, authService contract.IAuthService) *UserHandler {
     return &UserHandler{
         userService: userService,
         authService: authService,
     }
 }
 
-func mapToUserResponse(user domain.User) response.User {
+func mapToUserResponse(user entity.User) response.User {
 	return response.User{
 		ID:        user.ID,
 		Username:  user.Name,
@@ -31,6 +31,27 @@ func mapToUserResponse(user domain.User) response.User {
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}
+}
+
+func (h *UserHandler) uploadProfile(c *fiber.Ctx, userID string) (string, error) {
+	file, err := c.FormFile("image")
+	if err != nil {
+		return "", nil
+	}
+	uploadDir := "./public/uploads/profile/" + userID + "/"
+	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+			return "", err
+		}
+	}
+
+	sanitizedFileName := sanitizeFileName(file.Filename)
+	savePath := uploadDir + sanitizedFileName
+	if err := c.SaveFile(file, savePath); err != nil {
+		return "", err
+	}
+
+	return "https://raion-assessment.elginbrian.com/uploads/profile/" + userID + "/" + sanitizedFileName, nil
 }
 
 // GetAllUsers godoc
@@ -79,11 +100,13 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 
 // UpdateUser godoc
 // @Summary Update user information
-// @Description Update the username of the authenticated user.
+// @Description Update the bio, image_url, and/or username of the authenticated user. All fields are optional. If a field is not provided, the existing value will be retained.
 // @Tags users
-// @Accept json
+// @Accept multipart/form-data
 // @Produce json
-// @Param request body request.UpdateUserRequest true "Updated username"
+// @Param username formData string false "Updated username (optional)"
+// @Param bio formData string false "Updated bio (optional)"
+// @Param image formData file false "Updated image (optional)"
 // @Security BearerAuth
 // @Success 200 {object} response.UpdateUserResponse "Successful update user response"
 // @Failure 400 {object} response.ErrorResponse "Validation error"
@@ -103,21 +126,43 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 		return response.Error(c.Status(fiber.StatusUnauthorized), "Unauthorized: "+err.Error())
 	}
 
-	var payload request.UpdateUserRequest
-	if err := c.BodyParser(&payload); err != nil {
-		log.Printf("Error parsing request body: %v", err)
-		return response.ValidationError(c, "Invalid input, expected JSON with 'username'")
+	username := c.FormValue("username")
+	bio := c.FormValue("bio")
+	imageFile, err := c.FormFile("image")
+	if err != nil && imageFile != nil {
+		log.Printf("Error parsing form data: %v", err)
+		return response.ValidationError(c, "Invalid input")
 	}
 
-	if len(payload.Username) < 3 || len(payload.Username) > 50 {
+	if username != "" && (len(username) < 3 || len(username) > 50) {
 		return response.ValidationError(c, "Username must be between 3 and 50 characters")
 	}
 
-	updatedUser := domain.User{
+	var imageURL string
+	if imageFile != nil {
+		imageURL, err = h.uploadProfile(c, user.ID)
+		if err != nil {
+			return response.Error(c.Status(fiber.StatusInternalServerError), "Failed to upload image")
+		}
+	}
+
+	updatedUser := entity.User{
 		ID:        user.ID,
-		Name:      payload.Username,
+		Name:      username,
 		Email:     user.Email,
+		Bio:       bio,
+		ImageURL:  imageURL,
 		CreatedAt: user.CreatedAt,
+	}
+	
+	if username == "" {
+		updatedUser.Name = user.Name 
+	}
+	if bio == "" {
+		updatedUser.Bio = user.Bio 
+	}
+	if imageFile == nil {
+		updatedUser.ImageURL = user.ImageURL 
 	}
 
 	updatedUser, err = h.userService.UpdateUser(user.ID, updatedUser)

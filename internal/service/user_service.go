@@ -2,24 +2,15 @@ package service
 
 import (
 	"context"
-	"raion-assessment/internal/domain"
-	"raion-assessment/internal/repository"
+	contract "raion-assessment/domain/contract"
+	domain "raion-assessment/domain/entity"
 )
 
-type UserService interface {
-	FetchAllUsers() ([]domain.User, error)
-	FetchUserByID(id string) (domain.User, error)
-	CreateUser(user domain.User) (domain.User, error)
-	UpdateUser(id string, user domain.User) (domain.User, error)
-	DeleteUser(id string) error
-	SearchUsers(query string) ([]domain.User, error)
-}
-
 type userService struct {
-	userRepo repository.UserRepository
+	userRepo contract.IUserRepository
 }
 
-func NewUserService(repo repository.UserRepository) UserService {
+func NewUserService(repo contract.IUserRepository) contract.IUserService {
 	return &userService{userRepo: repo}
 }
 

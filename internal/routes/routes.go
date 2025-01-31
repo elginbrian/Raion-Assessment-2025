@@ -1,13 +1,10 @@
 package routes
 
 import (
-	"raion-assessment/config"
 	"raion-assessment/internal/handler"
 	"raion-assessment/internal/middleware"
 
-	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 )
 
@@ -20,10 +17,6 @@ func SetupRoutes(
 	likeHandler *handler.LikeHandler, 
 	jwtSecret string,
 ) {
-	config.InitMetrics()
-	app.Use(config.PrometheusMiddleware)
-	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
-
 	app.Static("/uploads", "./public/uploads")
 
 	app.Get("/", redirectToDocs)

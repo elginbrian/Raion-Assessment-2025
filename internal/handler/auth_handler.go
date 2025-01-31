@@ -2,7 +2,7 @@ package handler
 
 import (
 	"log"
-	"raion-assessment/internal/service"
+	contract "raion-assessment/domain/contract"
 	"raion-assessment/pkg/request"
 	"raion-assessment/pkg/response"
 
@@ -11,11 +11,11 @@ import (
 )
 
 type AuthHandler struct {
-	authService service.AuthService
+	authService contract.IAuthService
 	validate    *validator.Validate
 }
 
-func NewAuthHandler(authService service.AuthService) *AuthHandler {
+func NewAuthHandler(authService contract.IAuthService) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
 		validate:    validator.New(),

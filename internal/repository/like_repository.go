@@ -3,28 +3,22 @@ package repository
 import (
 	"context"
 	"fmt"
-	"raion-assessment/internal/domain"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-type LikeRepository interface {
-	GetLikesByPostID(ctx context.Context, postID string) ([]domain.Like, error)
-	GetLikesByUserID(ctx context.Context, userID string) ([]domain.Like, error)
-	AddLike(ctx context.Context, like domain.Like) (*domain.Like, error)
-	RemoveLike(ctx context.Context, userID, postID string) error
-}
-
 type likeRepository struct {
 	db *pgxpool.Pool
 }
 
-func NewLikeRepository(db *pgxpool.Pool) LikeRepository {
+func NewLikeRepository(db *pgxpool.Pool) contract.ILikeRepository {
 	return &likeRepository{db: db}
 }
 
-func (r *likeRepository) GetLikesByPostID(ctx context.Context, postID string) ([]domain.Like, error) {
+func (r *likeRepository) GetLikesByPostID(ctx context.Context, postID string) ([]entity.Like, error) {
 	query := "SELECT id, user_id, post_id, created_at FROM likes WHERE post_id = $1"
 	rows, err := r.db.Query(ctx, query, postID)
 	if err != nil {
@@ -32,9 +26,9 @@ func (r *likeRepository) GetLikesByPostID(ctx context.Context, postID string) ([
 	}
 	defer rows.Close()
 
-	var likes []domain.Like
+	var likes []entity.Like
 	for rows.Next() {
-		var like domain.Like
+		var like entity.Like
 		if err := rows.Scan(&like.ID, &like.UserID, &like.PostID, &like.CreatedAt); err != nil {
 			return nil, fmt.Errorf("error scanning like row: %w", err)
 		}
@@ -47,7 +41,7 @@ func (r *likeRepository) GetLikesByPostID(ctx context.Context, postID string) ([
 	return likes, nil
 }
 
-func (r *likeRepository) GetLikesByUserID(ctx context.Context, userID string) ([]domain.Like, error) {
+func (r *likeRepository) GetLikesByUserID(ctx context.Context, userID string) ([]entity.Like, error) {
 	query := "SELECT id, user_id, post_id, created_at FROM likes WHERE user_id = $1"
 	rows, err := r.db.Query(ctx, query, userID)
 	if err != nil {
@@ -55,9 +49,9 @@ func (r *likeRepository) GetLikesByUserID(ctx context.Context, userID string) ([
 	}
 	defer rows.Close()
 
-	var likes []domain.Like
+	var likes []entity.Like
 	for rows.Next() {
-		var like domain.Like
+		var like entity.Like
 		if err := rows.Scan(&like.ID, &like.UserID, &like.PostID, &like.CreatedAt); err != nil {
 			return nil, fmt.Errorf("error scanning like row: %w", err)
 		}
@@ -70,7 +64,7 @@ func (r *likeRepository) GetLikesByUserID(ctx context.Context, userID string) ([
 	return likes, nil
 }
 
-func (r *likeRepository) AddLike(ctx context.Context, like domain.Like) (*domain.Like, error) {
+func (r *likeRepository) AddLike(ctx context.Context, like entity.Like) (*entity.Like, error) {
 	query := "INSERT INTO likes (user_id, post_id) VALUES ($1, $2) RETURNING id, created_at"
 	err := r.db.QueryRow(ctx, query, like.UserID, like.PostID).Scan(&like.ID, &like.CreatedAt)
 	if err != nil {

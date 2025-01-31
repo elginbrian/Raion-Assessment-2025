@@ -3,26 +3,19 @@ package service
 import (
 	"context"
 	"errors"
-	"raion-assessment/internal/domain"
-	"raion-assessment/internal/repository"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
 )
 
-type CommentService interface {
-	GetCommentsByPostID(postID string) ([]domain.Comment, error)
-	GetCommentByID(commentID string) (domain.Comment, error)
-	CreateComment(comment domain.Comment) (domain.Comment, error)
-	DeleteComment(commentID string) error
-}
-
 type commentService struct {
-	commentRepo repository.CommentRepository
+	commentRepo contract.ICommentRepository
 }
 
-func NewCommentService(repo repository.CommentRepository) CommentService {
+func NewCommentService(repo contract.ICommentRepository) contract.ICommentService {
 	return &commentService{commentRepo: repo}
 }
 
-func (s *commentService) GetCommentsByPostID(postID string) ([]domain.Comment, error) {
+func (s *commentService) GetCommentsByPostID(postID string) ([]entity.Comment, error) {
 	ctx := context.Background()
 	comments, err := s.commentRepo.GetCommentsByPostID(ctx, postID)
 	if err != nil {
@@ -34,26 +27,26 @@ func (s *commentService) GetCommentsByPostID(postID string) ([]domain.Comment, e
 	return comments, nil
 }
 
-func (s *commentService) GetCommentByID(commentID string) (domain.Comment, error) {
+func (s *commentService) GetCommentByID(commentID string) (entity.Comment, error) {
 	ctx := context.Background()
 	comment, err := s.commentRepo.GetCommentByID(ctx, commentID)
 	if err != nil {
-		return domain.Comment{}, err
+		return entity.Comment{}, err
 	}
 	if comment == nil {
-		return domain.Comment{}, errors.New("not found")
+		return entity.Comment{}, errors.New("not found")
 	}
 	return *comment, nil
 }
 
-func (s *commentService) CreateComment(comment domain.Comment) (domain.Comment, error) {
+func (s *commentService) CreateComment(comment entity.Comment) (entity.Comment, error) {
 	ctx := context.Background()
 	createdComment, err := s.commentRepo.CreateComment(ctx, comment)
 	if err != nil {
-		return domain.Comment{}, err
+		return entity.Comment{}, err
 	}
 	if createdComment == nil {
-		return domain.Comment{}, errors.New("not found")
+		return entity.Comment{}, errors.New("not found")
 	}
 	return *createdComment, nil
 }

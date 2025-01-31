@@ -3,26 +3,19 @@ package service
 import (
 	"context"
 	"errors"
-	"raion-assessment/internal/domain"
-	"raion-assessment/internal/repository"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
 )
 
-type LikeService interface {
-	GetLikesByPostID(postID string) ([]domain.Like, error)
-	GetLikesByUserID(userID string) ([]domain.Like, error)
-	AddLike(userID, postID string) (domain.Like, error)
-	RemoveLike(userID, postID string) error
-}
-
 type likeService struct {
-	likeRepo repository.LikeRepository
+	likeRepo contract.ILikeRepository
 }
 
-func NewLikeService(repo repository.LikeRepository) LikeService {
+func NewLikeService(repo contract.ILikeRepository) contract.ILikeService {
 	return &likeService{likeRepo: repo}
 }
 
-func (s *likeService) GetLikesByPostID(postID string) ([]domain.Like, error) {
+func (s *likeService) GetLikesByPostID(postID string) ([]entity.Like, error) {
 	ctx := context.Background()
 	likes, err := s.likeRepo.GetLikesByPostID(ctx, postID)
 	if err != nil {
@@ -34,7 +27,7 @@ func (s *likeService) GetLikesByPostID(postID string) ([]domain.Like, error) {
 	return likes, nil
 }
 
-func (s *likeService) GetLikesByUserID(userID string) ([]domain.Like, error) {
+func (s *likeService) GetLikesByUserID(userID string) ([]entity.Like, error) {
 	ctx := context.Background()
 	likes, err := s.likeRepo.GetLikesByUserID(ctx, userID)
 	if err != nil {
@@ -46,15 +39,15 @@ func (s *likeService) GetLikesByUserID(userID string) ([]domain.Like, error) {
 	return likes, nil
 }
 
-func (s *likeService) AddLike(userID, postID string) (domain.Like, error) {
+func (s *likeService) AddLike(userID, postID string) (entity.Like, error) {
 	ctx := context.Background()
-	like := domain.Like{
+	like := entity.Like{
 		UserID: userID,
 		PostID: postID,
 	}
 	createdLike, err := s.likeRepo.AddLike(ctx, like)
 	if err != nil {
-		return domain.Like{}, err
+		return entity.Like{}, err
 	}
 	return *createdLike, nil
 }

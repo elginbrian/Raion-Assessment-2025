@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	migrations "raion-assessment/db/migrations"
+	migrations "raion-assessment/database/migrations"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )

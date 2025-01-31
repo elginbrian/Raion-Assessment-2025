@@ -888,9 +888,9 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update the username of the authenticated user.",
+                "description": "Update the bio, image_url, and/or username of the authenticated user.",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -901,13 +901,23 @@ const docTemplate = `{
                 "summary": "Update user information",
                 "parameters": [
                     {
+                        "type": "string",
                         "description": "Updated username",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.UpdateUserRequest"
-                        }
+                        "name": "username",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Updated bio (optional)",
+                        "name": "bio",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Updated image (optional)",
+                        "name": "image",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -1072,20 +1082,6 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 1,
                     "example": "Had an amazing trip to the mountains!"
-                }
-            }
-        },
-        "request.UpdateUserRequest": {
-            "type": "object",
-            "required": [
-                "username"
-            ],
-            "properties": {
-                "username": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3,
-                    "example": "john_doe"
                 }
             }
         },
@@ -1408,11 +1404,11 @@ const docTemplate = `{
         "response.LoginData": {
             "type": "object",
             "properties": {
-                "refresh_token": {
+                "access_token": {
                     "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 },
-                "token": {
+                "refresh_token": {
                     "type": "string",
                     "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 }
@@ -1465,9 +1461,9 @@ const docTemplate = `{
         "response.RefreshTokenData": {
             "type": "object",
             "properties": {
-                "token": {
+                "access_token": {
                     "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 }
             }
         },
@@ -1579,6 +1575,10 @@ const docTemplate = `{
         "response.User": {
             "type": "object",
             "properties": {
+                "bio": {
+                    "type": "string",
+                    "example": "Hi there!"
+                },
                 "created_at": {
                     "type": "string",
                     "example": "2025-01-31T12:00:00Z"
@@ -1590,6 +1590,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "3d5a8b92-f1c5-4dbe-a2a7-1d9a8c743e9b"
+                },
+                "image_url": {
+                    "type": "string",
+                    "example": "https://example.com/profile.jpg"
                 },
                 "updated_at": {
                     "type": "string",

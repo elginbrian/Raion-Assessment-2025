@@ -3,26 +3,23 @@ package repository
 import (
 	"context"
 	"fmt"
-	"raion-assessment/internal/domain"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-type AuthRepository interface {
-	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
-}
-
 type authRepository struct {
 	db *pgxpool.Pool
 }
 
-func NewAuthRepository(db *pgxpool.Pool) AuthRepository {
+func NewAuthRepository(db *pgxpool.Pool) contract.IAuthRepository {
 	return &authRepository{db: db}
 }
 
-func (r *authRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
-	var user domain.User
+func (r *authRepository) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+	var user entity.User
 	query := "SELECT id, name, email, password_hash FROM users WHERE email = $1"
 
 	row := r.db.QueryRow(ctx, query, email)

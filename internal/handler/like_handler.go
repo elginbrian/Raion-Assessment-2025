@@ -1,26 +1,26 @@
 package handler
 
 import (
-	"raion-assessment/internal/domain"
-	"raion-assessment/internal/service"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
 	"raion-assessment/pkg/response"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type LikeHandler struct {
-	likeService service.LikeService
-	authService service.AuthService
+	likeService contract.ILikeService
+	authService contract.IAuthService
 }
 
-func NewLikeHandler(likeService service.LikeService, authService service.AuthService) *LikeHandler {
+func NewLikeHandler(likeService contract.ILikeService, authService contract.IAuthService) *LikeHandler {
 	return &LikeHandler{
 		likeService: likeService,
 		authService: authService,
 	}
 }
 
-func (h *LikeHandler) extractUserFromToken(c *fiber.Ctx) (*domain.User, error) {
+func (h *LikeHandler) extractUserFromToken(c *fiber.Ctx) (*entity.User, error) {
 	authHeader := c.Get("Authorization")
 	if authHeader == "" || len(authHeader) <= len("Bearer ") {
 		return nil, response.Error(c.Status(fiber.StatusUnauthorized), "Missing or invalid token")

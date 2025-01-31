@@ -3,25 +3,18 @@ package service
 import (
 	"context"
 	"errors"
-	"raion-assessment/internal/domain"
-	"raion-assessment/internal/repository"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
+
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type AuthService interface {
-	Register(username, email, password string) error
-	Login(email, password string) (string, string, error)
-	RefreshToken(refreshToken string) (string, error)
-	ChangePassword(userID, oldPassword, newPassword string) error
-	GetCurrentUser(ctx context.Context, token string) (*domain.User, error)
-}
-
 type authService struct {
-	userRepo    repository.UserRepository
-	authRepo    repository.AuthRepository
+	userRepo    contract.IUserRepository
+	authRepo    contract.IAuthRepository
 	jwtSecret   string
 	refreshSecret string
 }
@@ -39,7 +32,7 @@ var (
 	ErrInvalidToken      = errors.New("invalid or expired token")
 )
 
-func NewAuthService(userRepo repository.UserRepository, authRepo repository.AuthRepository, jwtSecret, refreshSecret string) AuthService {
+func NewAuthService(userRepo contract.IUserRepository, authRepo contract.IAuthRepository, jwtSecret, refreshSecret string) contract.IAuthService {
 	return &authService{userRepo: userRepo, authRepo: authRepo, jwtSecret: jwtSecret, refreshSecret: refreshSecret}
 }
 
@@ -51,7 +44,7 @@ func (s *authService) Register(username, email, password string) error {
 		return ErrPasswordHashing
 	}
 
-	user := domain.User{
+	user := entity.User{
 		Name:         username,
 		Email:        email,
 		PasswordHash: string(hashedPassword),
@@ -100,7 +93,7 @@ func (s *authService) RefreshToken(refreshToken string) (string, error) {
 	return generateJWT(userID, s.jwtSecret, AccessTokenExpiration)
 }
 
-func (s *authService) GetCurrentUser(ctx context.Context, token string) (*domain.User, error) {
+func (s *authService) GetCurrentUser(ctx context.Context, token string) (*entity.User, error) {
 	claims, err := parseJWT(token, s.jwtSecret)
 	if err != nil {
 		return nil, ErrInvalidToken
@@ -116,7 +109,7 @@ func (s *authService) GetCurrentUser(ctx context.Context, token string) (*domain
 		return nil, ErrUserNotFound
 	}
 
-	return &domain.User{
+	return &entity.User{
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,

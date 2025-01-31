@@ -2,8 +2,8 @@ package handler
 
 import (
 	"os"
-	"raion-assessment/internal/domain"
-	"raion-assessment/internal/service"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
 	"raion-assessment/pkg/request"
 	"raion-assessment/pkg/response"
 	"regexp"
@@ -13,18 +13,18 @@ import (
 )
 
 type PostHandler struct {
-	postService service.PostService
-	authService service.AuthService
+	postService contract.IPostService
+	authService contract.IAuthService
 }
 
-func NewPostHandler(postService service.PostService, authService service.AuthService) *PostHandler {
+func NewPostHandler(postService contract.IPostService, authService contract.IAuthService) *PostHandler {
 	return &PostHandler{
         postService: postService,
         authService: authService,
     }
 }
 
-func (h *PostHandler) extractUserFromToken(c *fiber.Ctx) (*domain.User, error) {
+func (h *PostHandler) extractUserFromToken(c *fiber.Ctx) (*entity.User, error) {
 	authHeader := c.Get("Authorization")
 	if authHeader == "" || len(authHeader) <= len("Bearer ") {
 		return nil, response.Error(c.Status(fiber.StatusUnauthorized), "Missing or invalid token")
@@ -34,7 +34,7 @@ func (h *PostHandler) extractUserFromToken(c *fiber.Ctx) (*domain.User, error) {
 	return h.authService.GetCurrentUser(ctx, token)
 }
 
-func (h *PostHandler) transformToPostResponse(posts []domain.Post) []response.Post {
+func (h *PostHandler) transformToPostResponse(posts []entity.Post) []response.Post {
 	var postResponse []response.Post
 	for _, post := range posts {
 		postResponse = append(postResponse, response.Post{
@@ -49,12 +49,12 @@ func (h *PostHandler) transformToPostResponse(posts []domain.Post) []response.Po
 	return postResponse
 }
 
-func (h *PostHandler) uploadImage(c *fiber.Ctx) (string, error) {
+func (h *PostHandler) uploadImage(c *fiber.Ctx, userID string) (string, error) {
 	file, err := c.FormFile("image")
 	if err != nil {
 		return "", nil
 	}
-	uploadDir := "./public/uploads/"
+	uploadDir := "./public/uploads/posts/" + userID + "/"
 	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
 			return "", err
@@ -67,7 +67,7 @@ func (h *PostHandler) uploadImage(c *fiber.Ctx) (string, error) {
 		return "", err
 	}
 
-	return "https://raion-assessment.elginbrian.com/uploads/" + sanitizedFileName, nil
+	return "https://raion-assessment.elginbrian.com/uploads/posts/" + userID + "/" + sanitizedFileName, nil
 }
 
 func sanitizeFileName(fileName string) string {
@@ -109,7 +109,7 @@ func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {
 		return response.Error(c, "Post not found", fiber.StatusNotFound)
 	}
 
-	postResponse := h.transformToPostResponse([]domain.Post{post})[0]
+	postResponse := h.transformToPostResponse([]entity.Post{post})[0]
 	return response.Success(c, postResponse, fiber.StatusOK)
 }
 
@@ -156,12 +156,12 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 		return response.ValidationError(c, "Caption is required")
 	}
 
-	imageURL, err := h.uploadImage(c)
+	imageURL, err := h.uploadImage(c, user.ID)
 	if err != nil {
 		return response.Error(c, "Failed to upload image", fiber.StatusInternalServerError)
 	}
 
-	post := domain.Post{
+	post := entity.Post{
 		UserID:   user.ID,
 		Caption:  caption,
 		ImageURL: imageURL, 
@@ -172,7 +172,7 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 		return response.Error(c, err.Error(), fiber.StatusInternalServerError)
 	}
 
-	postResponse := h.transformToPostResponse([]domain.Post{createdPost})[0]
+	postResponse := h.transformToPostResponse([]entity.Post{createdPost})[0]
 	return response.Success(c, postResponse, fiber.StatusCreated)
 }
 
@@ -220,7 +220,7 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 		return response.Error(c, "Failed to update post", fiber.StatusInternalServerError)
 	}
 
-	postResponse := h.transformToPostResponse([]domain.Post{updatedPost})[0]
+	postResponse := h.transformToPostResponse([]entity.Post{updatedPost})[0]
 	return response.Success(c, postResponse, fiber.StatusOK)
 }
 

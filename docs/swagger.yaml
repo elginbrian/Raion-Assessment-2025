@@ -39,16 +39,6 @@ definitions:
     required:
     - caption
     type: object
-  request.UpdateUserRequest:
-    properties:
-      username:
-        example: john_doe
-        maxLength: 50
-        minLength: 3
-        type: string
-    required:
-    - username
-    type: object
   request.UserLoginRequest:
     properties:
       email:
@@ -267,10 +257,10 @@ definitions:
     type: object
   response.LoginData:
     properties:
-      refresh_token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      access_token:
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
-      token:
+      refresh_token:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
     type: object
@@ -307,8 +297,8 @@ definitions:
     type: object
   response.RefreshTokenData:
     properties:
-      token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      access_token:
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
     type: object
   response.RefreshTokenResponse:
@@ -383,6 +373,9 @@ definitions:
     type: object
   response.User:
     properties:
+      bio:
+        example: Hi there!
+        type: string
       created_at:
         example: "2025-01-31T12:00:00Z"
         type: string
@@ -391,6 +384,9 @@ definitions:
         type: string
       id:
         example: 3d5a8b92-f1c5-4dbe-a2a7-1d9a8c743e9b
+        type: string
+      image_url:
+        example: https://example.com/profile.jpg
         type: string
       updated_at:
         example: "2025-01-31T12:30:00Z"
@@ -982,15 +978,23 @@ paths:
       - users
     put:
       consumes:
-      - application/json
-      description: Update the username of the authenticated user.
+      - multipart/form-data
+      description: Update the bio, image_url, and/or username of the authenticated
+        user.
       parameters:
       - description: Updated username
-        in: body
-        name: request
+        in: formData
+        name: username
         required: true
-        schema:
-          $ref: '#/definitions/request.UpdateUserRequest'
+        type: string
+      - description: Updated bio (optional)
+        in: formData
+        name: bio
+        type: string
+      - description: Updated image (optional)
+        in: formData
+        name: image
+        type: file
       produces:
       - application/json
       responses:

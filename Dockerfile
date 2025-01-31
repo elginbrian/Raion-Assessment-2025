@@ -15,7 +15,7 @@ COPY db/migrations /app/db/migrations
 
 COPY public/ /app/public/
 
-RUN go build -mod=vendor -o /app/raion-assessment ./cmd/main.go
+RUN go build -mod=vendor -o /app/raion-assessment ./cmd/app/main.go
 
 FROM alpine:latest
 

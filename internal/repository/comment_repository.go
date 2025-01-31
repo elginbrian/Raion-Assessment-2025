@@ -3,28 +3,22 @@ package repository
 import (
 	"context"
 	"fmt"
-	"raion-assessment/internal/domain"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-type CommentRepository interface {
-    GetCommentsByPostID(ctx context.Context, postID string) ([]domain.Comment, error)
-    GetCommentByID(ctx context.Context, commentID string) (*domain.Comment, error)
-    CreateComment(ctx context.Context, comment domain.Comment) (*domain.Comment, error)
-    DeleteComment(ctx context.Context, commentID string) error
-}
-
 type commentRepository struct {
     db *pgxpool.Pool
 }
 
-func NewCommentRepository(db *pgxpool.Pool) CommentRepository {
+func NewCommentRepository(db *pgxpool.Pool) contract.ICommentRepository {
     return &commentRepository{db: db}
 }
 
-func (r *commentRepository) GetCommentsByPostID(ctx context.Context, postID string) ([]domain.Comment, error) {
+func (r *commentRepository) GetCommentsByPostID(ctx context.Context, postID string) ([]entity.Comment, error) {
     query := "SELECT id, user_id, post_id, content, created_at, updated_at FROM comments WHERE post_id = $1 ORDER BY created_at DESC"
     rows, err := r.db.Query(ctx, query, postID)
     if err != nil {
@@ -32,9 +26,9 @@ func (r *commentRepository) GetCommentsByPostID(ctx context.Context, postID stri
     }
     defer rows.Close()
 
-    var comments []domain.Comment
+    var comments []entity.Comment
     for rows.Next() {
-        var comment domain.Comment
+        var comment entity.Comment
         if err := rows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.CreatedAt, &comment.UpdatedAt); err != nil {
             return nil, fmt.Errorf("error scanning comment row: %w", err)
         }
@@ -46,9 +40,9 @@ func (r *commentRepository) GetCommentsByPostID(ctx context.Context, postID stri
     return comments, nil
 }
 
-func (r *commentRepository) GetCommentByID(ctx context.Context, commentID string) (*domain.Comment, error) {
+func (r *commentRepository) GetCommentByID(ctx context.Context, commentID string) (*entity.Comment, error) {
     query := "SELECT id, user_id, post_id, content, created_at, updated_at FROM comments WHERE id = $1"
-    var comment domain.Comment
+    var comment entity.Comment
     err := r.db.QueryRow(ctx, query, commentID).Scan(
         &comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.CreatedAt, &comment.UpdatedAt,
     )
@@ -61,7 +55,7 @@ func (r *commentRepository) GetCommentByID(ctx context.Context, commentID string
     return &comment, nil
 }
 
-func (r *commentRepository) CreateComment(ctx context.Context, comment domain.Comment) (*domain.Comment, error) {
+func (r *commentRepository) CreateComment(ctx context.Context, comment entity.Comment) (*entity.Comment, error) {
     query := "INSERT INTO comments (user_id, post_id, content) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at"
     err := r.db.QueryRow(ctx, query, comment.UserID, comment.PostID, comment.Content).Scan(
         &comment.ID, &comment.CreatedAt, &comment.UpdatedAt,

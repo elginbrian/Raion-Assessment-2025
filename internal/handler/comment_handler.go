@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"raion-assessment/internal/domain"
-	"raion-assessment/internal/service"
+	contract "raion-assessment/domain/contract"
+	entity "raion-assessment/domain/entity"
 	"raion-assessment/pkg/request"
 	"raion-assessment/pkg/response"
 
@@ -10,18 +10,18 @@ import (
 )
 
 type CommentHandler struct {
-	commentService service.CommentService
-	authService    service.AuthService
+	commentService contract.ICommentService
+	authService    contract.IAuthService
 }
 
-func NewCommentHandler(commentService service.CommentService, authService service.AuthService) *CommentHandler {
+func NewCommentHandler(commentService contract.ICommentService, authService contract.IAuthService) *CommentHandler {
 	return &CommentHandler{
 		commentService: commentService,
 		authService:    authService,
 	}
 }
 
-func (h *CommentHandler) getUserFromToken(c *fiber.Ctx) (*domain.User, error) {
+func (h *CommentHandler) getUserFromToken(c *fiber.Ctx) (*entity.User, error) {
 	authHeader := c.Get("Authorization")
 	if authHeader == "" || len(authHeader) <= len("Bearer ") {
 		return nil, response.Error(c, "Missing or invalid token", fiber.StatusUnauthorized)
@@ -84,7 +84,7 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 		return h.handleValidationError(c, "Comment content cannot be empty")
 	}
 
-	comment := domain.Comment{
+	comment := entity.Comment{
 		PostID:  c.Params("post_id"),
 		UserID:  user.ID,
 		Content: input.Content,
