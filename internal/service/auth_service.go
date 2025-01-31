@@ -13,34 +13,42 @@ import (
 
 type AuthService interface {
 	Register(username, email, password string) error
-	Login(email, password string) (string, error)
-	ChangePassword(userID string, oldPassword, newPassword string) error
+	Login(email, password string) (string, string, error)
+	RefreshToken(refreshToken string) (string, error)
+	ChangePassword(userID, oldPassword, newPassword string) error
 	GetCurrentUser(ctx context.Context, token string) (*domain.User, error)
 }
 
 type authService struct {
-	authRepo  repository.AuthRepository
-	userRepo  repository.UserRepository
-	jwtSecret string
+	userRepo    repository.UserRepository
+	authRepo    repository.AuthRepository
+	jwtSecret   string
+	refreshSecret string
 }
 
-func NewAuthService(authRepo repository.AuthRepository, userRepo repository.UserRepository, jwtSecret string) AuthService {
-	return &authService{authRepo: authRepo, userRepo: userRepo, jwtSecret: jwtSecret}
-}
+const (
+	AccessTokenExpiration  = 15 * time.Minute
+	RefreshTokenExpiration = 7 * 24 * time.Hour
+)
 
 var (
-	ErrUserNotFound       = errors.New("user not found")
-	ErrIncorrectPassword  = errors.New("incorrect old password")
-	ErrPasswordHashing    = errors.New("error hashing new password")
-	ErrUpdatingUser       = errors.New("error updating user in database")
+	ErrUserNotFound      = errors.New("user not found")
+	ErrIncorrectPassword = errors.New("incorrect password")
+	ErrPasswordHashing   = errors.New("error hashing password")
+	ErrUpdatingUser      = errors.New("error updating user in database")
+	ErrInvalidToken      = errors.New("invalid or expired token")
 )
+
+func NewAuthService(userRepo repository.UserRepository, authRepo repository.AuthRepository, jwtSecret, refreshSecret string) AuthService {
+	return &authService{userRepo: userRepo, authRepo: authRepo, jwtSecret: jwtSecret, refreshSecret: refreshSecret}
+}
 
 func (s *authService) Register(username, email, password string) error {
 	ctx := context.Background()
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return ErrPasswordHashing
 	}
 
 	user := domain.User{
@@ -53,64 +61,71 @@ func (s *authService) Register(username, email, password string) error {
 	return err
 }
 
-func (s *authService) Login(email, password string) (string, error) {
+func (s *authService) Login(email, password string) (string, string, error) {
 	ctx := context.Background()
 
 	user, err := s.authRepo.GetUserByEmail(ctx, email)
 	if err != nil || user == nil {
-		return "", errors.New("invalid email or password")
+		return "", "", ErrUserNotFound
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return "", errors.New("invalid email or password")
+		return "", "", ErrIncorrectPassword
 	}
 
-	token, err := GenerateJWT(user.ID, s.jwtSecret)
+	accessToken, err := generateJWT(user.ID, s.jwtSecret, AccessTokenExpiration)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return token, nil
+	refreshToken, err := generateJWT(user.ID, s.refreshSecret, RefreshTokenExpiration)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
+}
+
+func (s *authService) RefreshToken(refreshToken string) (string, error) {
+	claims, err := parseJWT(refreshToken, s.refreshSecret)
+	if err != nil {
+		return "", ErrInvalidToken
+	}
+
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return "", ErrInvalidToken
+	}
+
+	return generateJWT(userID, s.jwtSecret, AccessTokenExpiration)
 }
 
 func (s *authService) GetCurrentUser(ctx context.Context, token string) (*domain.User, error) {
-    parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-        if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-            return nil, errors.New("invalid token signing method")
-        }
-        return []byte(s.jwtSecret), nil
-    })
-    if err != nil || !parsedToken.Valid {
-        return nil, errors.New("invalid or expired token")
-    }
-
-    claims, ok := parsedToken.Claims.(jwt.MapClaims)
-    if !ok {
-        return nil, errors.New("invalid token claims")
-    }
-
-    userID, ok := claims["user_id"].(string)
-    if !ok {
-        return nil, errors.New("user_id not found in token claims")
-    }
-
-    user, err := s.userRepo.GetUserByID(ctx, userID)
-
-	returnedUser := &domain.User{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	claims, err := parseJWT(token, s.jwtSecret)
+	if err != nil {
+		return nil, ErrInvalidToken
 	}
+
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, ErrInvalidToken
+	}
+
+	user, err := s.userRepo.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, ErrUserNotFound
 	}
 
-	return returnedUser, nil
+	return &domain.User{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
 }
 
-func (s *authService) ChangePassword(userID string, oldPassword, newPassword string) error {
+func (s *authService) ChangePassword(userID, oldPassword, newPassword string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -119,12 +134,7 @@ func (s *authService) ChangePassword(userID string, oldPassword, newPassword str
 		return ErrUserNotFound
 	}
 
-	userByEmail, err := s.authRepo.GetUserByEmail(ctx, user.Email)
-	if err != nil || userByEmail == nil {
-		return ErrUserNotFound
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(userByEmail.PasswordHash), []byte(oldPassword)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(oldPassword)); err != nil {
 		return ErrIncorrectPassword
 	}
 
@@ -141,18 +151,33 @@ func (s *authService) ChangePassword(userID string, oldPassword, newPassword str
 	return nil
 }
 
-func GenerateJWT(userID string, secret string) (string, error) {
-	expirationTime := time.Now().Add(24 * time.Hour)
+func generateJWT(userID, secret string, expiration time.Duration) (string, error) {
+	expirationTime := time.Now().Add(expiration)
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     expirationTime.Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(secret))
-	if err != nil {
-		return "", err
+	return token.SignedString([]byte(secret))
+}
+
+func parseJWT(tokenString, secret string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("invalid token signing method")
+		}
+		return []byte(secret), nil
+	})
+
+	if err != nil || !token.Valid {
+		return nil, ErrInvalidToken
 	}
 
-	return signedToken, nil
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, ErrInvalidToken
+	}
+
+	return claims, nil
 }

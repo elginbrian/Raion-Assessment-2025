@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"raion-assessment/internal/domain"
 	"raion-assessment/internal/repository"
 )
@@ -36,7 +37,7 @@ func (s *postService) FetchPostByID(id string) (domain.Post, error) {
 		return domain.Post{}, err
 	}
 	if post == nil {
-		return domain.Post{}, domain.ErrNotFound
+		return domain.Post{}, errors.New("not found")
 	}
 	return *post, nil
 }
@@ -48,7 +49,7 @@ func (s *postService) FetchPostsByUserID(userID string) ([]domain.Post, error) {
 		return nil, err
 	}
 	if len(posts) == 0 {
-		return nil, domain.ErrNotFound 
+		return nil, errors.New("not found")
 	}
 	return posts, nil
 }
@@ -60,7 +61,7 @@ func (s *postService) CreatePost(post domain.Post) (domain.Post, error) {
 		return domain.Post{}, err
 	}
 	if createdPost == nil {
-		return domain.Post{}, domain.ErrNotFound
+		return domain.Post{}, errors.New("not found")
 	}
 	return *createdPost, nil
 }
@@ -72,7 +73,7 @@ func (s *postService) UpdatePost(id string, post domain.Post) (domain.Post, erro
 		return domain.Post{}, err
 	}
 	if updatedPost == nil {
-		return domain.Post{}, domain.ErrNotFound
+		return domain.Post{}, errors.New("not found")
 	}
 	return *updatedPost, nil
 }
@@ -93,7 +94,7 @@ func (s *postService) SearchPosts(query string) ([]domain.Post, error) {
 		return nil, err
 	}
 	if len(posts) == 0 {
-		return nil, domain.ErrNotFound 
+		return nil, errors.New("not found")
 	}
 	return posts, nil
 }

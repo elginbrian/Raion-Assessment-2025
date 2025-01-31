@@ -94,7 +94,7 @@ func (h *LikeHandler) UnlikePost(c *fiber.Ctx) error {
 // @Tags likes
 // @Produce json
 // @Param post_id path string true "Post ID"
-// @Success 200 {array} response.LikeResponse "List of users who liked the post"
+// @Success 200 {array} response.GetAllLikesResponse "List of users who liked the post"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /posts/{post_id}/likes [get]
@@ -118,7 +118,7 @@ func (h *LikeHandler) GetLikesByPostID(c *fiber.Ctx) error {
 // @Tags likes
 // @Produce json
 // @Param user_id path string true "User ID"
-// @Success 200 {array} response.LikeResponse "List of posts liked by the user"
+// @Success 200 {array} response.GetAllLikesResponse "List of posts liked by the user"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /users/{user_id}/likes [get]

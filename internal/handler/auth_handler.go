@@ -31,7 +31,7 @@ func extractToken(c *fiber.Ctx) (string, error) {
 }
 
 // @Summary Register a new user
-// @Description Create a new account by providing a username, email, and password. The system checks if the details are valid and returns a success message if registration is successful.
+// @Description Create a new account by providing a username, email, and password.
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -64,12 +64,12 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 }
 
 // @Summary Log in a user
-// @Description Log in to your account by providing your email and password. If the details are correct, you will receive a JWT token to use for secure access to other endpoints.
+// @Description Authenticate user and receive access and refresh tokens.
 // @Tags auth
 // @Accept json
 // @Produce json
 // @Param request body request.UserLoginRequest true "User login details"
-// @Success 201 {object} response.LoginResponse "Successful login response"
+// @Success 200 {object} response.LoginResponse "Successful login response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /auth/login [post]
@@ -86,26 +86,55 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return response.ValidationError(c, err.Error())
 	}
 
-	token, err := h.authService.Login(req.Email, req.Password)
+	accessToken, refreshToken, err := h.authService.Login(req.Email, req.Password)
 	if err != nil {
 		log.Printf("Login failed: %v", err)
 		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
 	}
 
 	return response.Success(c, response.LoginData{
-		Token: "Bearer " + token,
+		AccessToken:  "Bearer " + accessToken,
+		RefreshToken: refreshToken,
+	})
+}
+
+// @Summary Refresh access token
+// @Description Obtain a new access token using a valid refresh token.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body request.RefreshTokenRequest true "Refresh token request"
+// @Success 200 {object} response.RefreshTokenResponse "New access token"
+// @Failure 400 {object} response.ErrorResponse "Bad request"
+// @Failure 500 {object} response.ErrorResponse "Internal server error"
+// @Router /auth/refresh-token [post]
+func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
+	var req request.RefreshTokenRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		log.Printf("Error parsing request body: %v", err)
+		return response.ValidationError(c, "Invalid request format")
+	}
+
+	newAccessToken, err := h.authService.RefreshToken(req.RefreshToken)
+	if err != nil {
+		log.Printf("Token refresh failed: %v", err)
+		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
+	}
+
+	return response.Success(c, response.RefreshTokenData{
+		AccessToken: "Bearer " + newAccessToken,
 	})
 }
 
 // @Summary Get current user info
-// @Description Retrieve details about the logged-in user. You must include your JWT token in the Authorization header to access this information.
+// @Description Retrieve logged-in user's details using an access token.
 // @Tags auth
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} response.GetCurrentUserResponse "User information retrieved successfully"
-// @Failure 401 {object} response.ErrorResponse "Unauthorized or invalid token"
-// @Failure 500 {object} response.ErrorResponse "Internal server error"
+// @Success 200 {object} response.GetCurrentUserResponse "User details"
+// @Failure 401 {object} response.ErrorResponse "Unauthorized"
 // @Router /auth/current-user [get]
 func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
 	token, err := extractToken(c)

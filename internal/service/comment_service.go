@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"raion-assessment/internal/domain"
 	"raion-assessment/internal/repository"
 )
@@ -28,7 +29,7 @@ func (s *commentService) GetCommentsByPostID(postID string) ([]domain.Comment, e
 		return nil, err
 	}
 	if len(comments) == 0 {
-		return nil, domain.ErrNotFound
+		return nil, errors.New("not found")
 	}
 	return comments, nil
 }
@@ -40,7 +41,7 @@ func (s *commentService) GetCommentByID(commentID string) (domain.Comment, error
 		return domain.Comment{}, err
 	}
 	if comment == nil {
-		return domain.Comment{}, domain.ErrNotFound
+		return domain.Comment{}, errors.New("not found")
 	}
 	return *comment, nil
 }
@@ -52,7 +53,7 @@ func (s *commentService) CreateComment(comment domain.Comment) (domain.Comment, 
 		return domain.Comment{}, err
 	}
 	if createdComment == nil {
-		return domain.Comment{}, domain.ErrNotFound
+		return domain.Comment{}, errors.New("not found")
 	}
 	return *createdComment, nil
 }

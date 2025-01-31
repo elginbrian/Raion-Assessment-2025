@@ -23,8 +23,8 @@ func NewUserHandler(userService service.UserService, authService service.AuthSer
     }
 }
 
-func mapToUserResponse(user domain.User) domain.UserResponse {
-	return domain.UserResponse{
+func mapToUserResponse(user domain.User) response.User {
+	return response.User{
 		ID:        user.ID,
 		Username:  user.Name,
 		Email:     user.Email,
@@ -48,7 +48,7 @@ func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 		return response.Error(c, "Error fetching users", fiber.StatusInternalServerError)
 	}
 
-	var userResponses []domain.UserResponse
+	var userResponses []response.User
 	for _, user := range users {
 		userResponses = append(userResponses, mapToUserResponse(user))
 	}
@@ -135,7 +135,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 // @Tags search
 // @Produce json
 // @Param query query string true "Search query"
-// @Success 200 {array} domain.UserResponse "Successful search response"
+// @Success 200 {array} response.SearchUsersResponse "Successful search response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /search/users [get]
@@ -155,7 +155,7 @@ func (h *UserHandler) SearchUsers(c *fiber.Ctx) error {
 		return response.Error(c, err.Error(), fiber.StatusInternalServerError)
 	}
 
-	var userResponses []domain.UserResponse
+	var userResponses []response.User
 	for _, user := range users {
 		userResponses = append(userResponses, mapToUserResponse(user))
 	}

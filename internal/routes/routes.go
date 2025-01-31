@@ -53,9 +53,14 @@ func redirectToDocs(c *fiber.Ctx) error {
 
 func setupLikeRoutes(app *fiber.App, handler *handler.LikeHandler) {
 	likeGroup := app.Group("/api/v1/posts")
-	likeGroup.Post("/:post_id/like", handler.LikePost)    
-	likeGroup.Post("/:post_id/unlike", handler.UnlikePost) 
+	likeGroup.Post("/:post_id/like", handler.LikePost)
+	likeGroup.Post("/:post_id/unlike", handler.UnlikePost)
+	likeGroup.Get("/:post_id/likes", handler.GetLikesByPostID)
+
+	userLikeGroup := app.Group("/api/v1/users")
+	userLikeGroup.Get("/:user_id/likes", handler.GetLikesByUserID)
 }
+
 
 func setupSearchRoutes(app *fiber.App, userHandler *handler.UserHandler, postHandler *handler.PostHandler) {
 	searchGroup := app.Group("/api/v1/search")
@@ -74,6 +79,7 @@ func setupAuthRoutes(app *fiber.App, handler *handler.AuthHandler, jwtSecret str
 	authGroup := app.Group("/api/v1/auth")
 	authGroup.Post("/register", handler.Register)
 	authGroup.Post("/login", handler.Login)
+	authGroup.Post("/refresh-token", handler.RefreshToken)
 	authGroup.Get("/current-user", handler.GetUserInfo, middleware.TokenValidationMiddleware(jwtSecret))
 	authGroup.Put("/change-password", handler.ChangePassword, middleware.TokenValidationMiddleware(jwtSecret))
 }

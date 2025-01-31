@@ -16,7 +16,7 @@ type Container struct {
 	LikeHandler    *handler.LikeHandler
 }
 
-func NewContainer(db *pgxpool.Pool, jwtSecret string) *Container {
+func NewContainer(db *pgxpool.Pool, jwtSecret string, refreshSecret string) *Container {
 	// Repositories
 	userRepo := repository.NewUserRepository(db)
 	authRepo := repository.NewAuthRepository(db)
@@ -26,7 +26,7 @@ func NewContainer(db *pgxpool.Pool, jwtSecret string) *Container {
 
 	// Services
 	userService := service.NewUserService(userRepo)
-	authService := service.NewAuthService(authRepo, userRepo, jwtSecret)
+	authService := service.NewAuthService(userRepo, authRepo, jwtSecret, refreshSecret)
 	postService := service.NewPostService(postRepo) 
 	commentService := service.NewCommentService(commentRepo)
 	likeService := service.NewLikeService(likeRepo)

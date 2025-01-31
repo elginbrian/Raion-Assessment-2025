@@ -21,3 +21,7 @@ func GetDatabaseURL() string {
 func GetJWTSecret() string {
     return "my-very-secure-secret"
 }
+
+func GetRefreshSecret() string {
+	return "my-very-secure-refresh-secret"
+}

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"raion-assessment/internal/domain"
 	"raion-assessment/internal/repository"
 )
@@ -28,7 +29,7 @@ func (s *likeService) GetLikesByPostID(postID string) ([]domain.Like, error) {
 		return nil, err
 	}
 	if len(likes) == 0 {
-		return nil, domain.ErrNotFound
+		return nil, errors.New("not found")
 	}
 	return likes, nil
 }
@@ -40,7 +41,7 @@ func (s *likeService) GetLikesByUserID(userID string) ([]domain.Like, error) {
 		return nil, err
 	}
 	if len(likes) == 0 {
-		return nil, domain.ErrNotFound
+		return nil, errors.New("not found")
 	}
 	return likes, nil
 }

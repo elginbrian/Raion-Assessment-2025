@@ -34,16 +34,16 @@ func (h *PostHandler) extractUserFromToken(c *fiber.Ctx) (*domain.User, error) {
 	return h.authService.GetCurrentUser(ctx, token)
 }
 
-func (h *PostHandler) transformToPostResponse(posts []domain.Post) []domain.PostResponse {
-	var postResponse []domain.PostResponse
+func (h *PostHandler) transformToPostResponse(posts []domain.Post) []response.Post {
+	var postResponse []response.Post
 	for _, post := range posts {
-		postResponse = append(postResponse, domain.PostResponse{
+		postResponse = append(postResponse, response.Post{
 			ID:        post.ID,
 			UserID:    post.UserID,
 			Caption:   post.Caption,
 			ImageURL:  post.ImageURL,
-			CreatedAt: post.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt: post.UpdatedAt.Format("2006-01-02 15:04:05"),
+			CreatedAt: post.CreatedAt,
+			UpdatedAt: post.UpdatedAt,
 		})
 	}
 	return postResponse
@@ -127,9 +127,6 @@ func (h *PostHandler) GetPostsByUserID(c *fiber.Ctx) error {
 	userID := c.Params("user_id")
 	posts, err := h.postService.FetchPostsByUserID(userID)
 	if err != nil {
-		if err == domain.ErrNotFound {
-			return response.Error(c, "No posts found for this user", fiber.StatusNotFound)
-		}
 		return response.Error(c, "Failed to fetch posts", fiber.StatusInternalServerError)
 	}
 	return response.Success(c, h.transformToPostResponse(posts), fiber.StatusOK)

@@ -31,6 +31,7 @@ func main() {
 	serverPort := config.GetServerPort()
 	databaseURL := config.GetDatabaseURL()
 	jwtSecret := config.GetJWTSecret()
+	refreshSecret := config.GetRefreshSecret()
 
 	db, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
@@ -49,7 +50,7 @@ func main() {
 		log.Fatalf("Error applying migrations: %v", err)
 	}
 
-	container := di.NewContainer(db, jwtSecret)
+	container := di.NewContainer(db, jwtSecret, refreshSecret)
 
 	app := fiber.New()
 	app.Use(logger.New())

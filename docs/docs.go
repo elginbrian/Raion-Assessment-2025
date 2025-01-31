@@ -40,7 +40,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_request.ChangePasswordRequest"
+                            "$ref": "#/definitions/request.ChangePasswordRequest"
                         }
                     }
                 ],
@@ -48,19 +48,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Password changed successfully",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ChangePasswordData"
+                            "$ref": "#/definitions/response.ChangePasswordData"
                         }
                     },
                     "400": {
                         "description": "Validation error or invalid request format",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -73,7 +73,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieve details about the logged-in user. You must include your JWT token in the Authorization header to access this information.",
+                "description": "Retrieve logged-in user's details using an access token.",
                 "consumes": [
                     "application/json"
                 ],
@@ -86,21 +86,15 @@ const docTemplate = `{
                 "summary": "Get current user info",
                 "responses": {
                     "200": {
-                        "description": "User information retrieved successfully",
+                        "description": "User details",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.GetCurrentUserResponse"
+                            "$ref": "#/definitions/response.GetCurrentUserResponse"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized or invalid token",
+                        "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -108,7 +102,7 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "Log in to your account by providing your email and password. If the details are correct, you will receive a JWT token to use for secure access to other endpoints.",
+                "description": "Authenticate user and receive access and refresh tokens.",
                 "consumes": [
                     "application/json"
                 ],
@@ -126,27 +120,73 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_request.UserLoginRequest"
+                            "$ref": "#/definitions/request.UserLoginRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Successful login response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.LoginResponse"
+                            "$ref": "#/definitions/response.LoginResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh-token": {
+            "post": {
+                "description": "Obtain a new access token using a valid refresh token.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh access token",
+                "parameters": [
+                    {
+                        "description": "Refresh token request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "New access token",
+                        "schema": {
+                            "$ref": "#/definitions/response.RefreshTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -154,7 +194,7 @@ const docTemplate = `{
         },
         "/auth/register": {
             "post": {
-                "description": "Create a new account by providing a username, email, and password. The system checks if the details are valid and returns a success message if registration is successful.",
+                "description": "Create a new account by providing a username, email, and password.",
                 "consumes": [
                     "application/json"
                 ],
@@ -172,7 +212,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_request.UserRegistrationRequest"
+                            "$ref": "#/definitions/request.UserRegistrationRequest"
                         }
                     }
                 ],
@@ -180,19 +220,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Successful registration response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.RegisterResponse"
+                            "$ref": "#/definitions/response.RegisterResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -223,19 +263,19 @@ const docTemplate = `{
                     "204": {
                         "description": "Successful deletion response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.DeleteCommentResponse"
+                            "$ref": "#/definitions/response.DeleteCommentResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -255,19 +295,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful fetch posts response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.GetAllPostsResponse"
+                            "$ref": "#/definitions/response.GetAllPostsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -308,19 +348,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Successful image upload response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.CreatePostResponse"
+                            "$ref": "#/definitions/response.CreatePostResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -349,19 +389,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful fetch posts by user response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.GetAllPostsResponse"
+                            "$ref": "#/definitions/response.GetAllPostsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -390,19 +430,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful fetch post response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.GetPostByIDResponse"
+                            "$ref": "#/definitions/response.GetPostByIDResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -438,7 +478,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_request.UpdatePostRequest"
+                            "$ref": "#/definitions/request.UpdatePostRequest"
                         }
                     }
                 ],
@@ -446,19 +486,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful update response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.UpdatePostResponse"
+                            "$ref": "#/definitions/response.UpdatePostResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -487,19 +527,19 @@ const docTemplate = `{
                     "204": {
                         "description": "Successful delete post response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.DeletePostResponse"
+                            "$ref": "#/definitions/response.DeletePostResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -530,20 +570,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/raion-battlepass_pkg_response.GetCommentsResponse"
+                                "$ref": "#/definitions/response.GetCommentsResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -579,7 +619,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_request.CreateCommentRequest"
+                            "$ref": "#/definitions/request.CreateCommentRequest"
                         }
                     }
                 ],
@@ -587,19 +627,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created comment response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.CreateCommentResponse"
+                            "$ref": "#/definitions/response.CreateCommentResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -630,19 +670,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully liked post",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.LikeResponse"
+                            "$ref": "#/definitions/response.LikeResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -673,20 +713,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/raion-battlepass_pkg_response.LikeResponse"
+                                "$ref": "#/definitions/response.GetAllLikesResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -717,19 +757,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully unliked post",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.LikeResponse"
+                            "$ref": "#/definitions/response.LikeResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -760,14 +800,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/raion-battlepass_pkg_response.SearchPostsResponse"
+                                "$ref": "#/definitions/response.SearchPostsResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Invalid query parameter",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -798,20 +838,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/raion-battlepass_internal_domain.UserResponse"
+                                "$ref": "#/definitions/response.SearchUsersResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -831,13 +871,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful fetch users response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.GetAllUsersResponse"
+                            "$ref": "#/definitions/response.GetAllUsersResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -866,7 +906,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_request.UpdateUserRequest"
+                            "$ref": "#/definitions/request.UpdateUserRequest"
                         }
                     }
                 ],
@@ -874,25 +914,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful update user response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.UpdateUserResponse"
+                            "$ref": "#/definitions/response.UpdateUserResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized or invalid token",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -921,13 +961,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful fetch user by ID response",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.GetUserByIDResponse"
+                            "$ref": "#/definitions/response.GetUserByIDResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -958,20 +998,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/raion-battlepass_pkg_response.LikeResponse"
+                                "$ref": "#/definitions/response.GetAllLikesResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/raion-battlepass_pkg_response.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -979,27 +1019,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "raion-battlepass_internal_domain.UserResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "raion-battlepass_pkg_request.ChangePasswordRequest": {
+        "request.ChangePasswordRequest": {
             "type": "object",
             "required": [
                 "new_password",
@@ -1008,26 +1028,41 @@ const docTemplate = `{
             "properties": {
                 "new_password": {
                     "type": "string",
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "NewP@ssw0rd123"
                 },
                 "old_password": {
                     "type": "string",
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "OldP@ssw0rd"
                 }
             }
         },
-        "raion-battlepass_pkg_request.CreateCommentRequest": {
+        "request.CreateCommentRequest": {
             "type": "object",
             "required": [
                 "content"
             ],
             "properties": {
                 "content": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "This is a great post!"
                 }
             }
         },
-        "raion-battlepass_pkg_request.UpdatePostRequest": {
+        "request.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string",
+                    "example": "your_refresh_token_here"
+                }
+            }
+        },
+        "request.UpdatePostRequest": {
             "type": "object",
             "required": [
                 "caption"
@@ -1035,11 +1070,12 @@ const docTemplate = `{
             "properties": {
                 "caption": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "example": "Had an amazing trip to the mountains!"
                 }
             }
         },
-        "raion-battlepass_pkg_request.UpdateUserRequest": {
+        "request.UpdateUserRequest": {
             "type": "object",
             "required": [
                 "username"
@@ -1048,11 +1084,12 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "maxLength": 50,
-                    "minLength": 3
+                    "minLength": 3,
+                    "example": "john_doe"
                 }
             }
         },
-        "raion-battlepass_pkg_request.UserLoginRequest": {
+        "request.UserLoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -1060,14 +1097,16 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john.doe@example.com"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "P@ssw0rd123"
                 }
             }
         },
-        "raion-battlepass_pkg_request.UserRegistrationRequest": {
+        "request.UserRegistrationRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -1076,77 +1115,129 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john.doe@example.com"
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "P@ssw0rd123"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
-        "raion-battlepass_pkg_response.ChangePasswordData": {
+        "response.ChangePasswordData": {
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Password changed successfully"
                 }
             }
         },
-        "raion-battlepass_pkg_response.Comment": {
+        "response.Comment": {
             "type": "object",
             "properties": {
                 "content": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "This is a comment!"
                 },
                 "created_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2025-01-31T12:00:00Z"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "post_id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "c6f7c988-233f-4f3c-a74d-17f72e4a1b56"
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2025-01-31T12:30:00Z"
                 },
                 "user_id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "b3d1a42b-6871-4a47-bec3-6df0980a9c75"
                 }
             }
         },
-        "raion-battlepass_pkg_response.CreateCommentResponse": {
+        "response.CreateCommentResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.Comment"
+                    "$ref": "#/definitions/response.Comment"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.CreatePostResponse": {
+        "response.CreatePostResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.Post"
+                    "$ref": "#/definitions/response.Post"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.DeleteCommentResponse": {
+        "response.DeleteCommentResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Comment deleted successfully"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "response.DeletePostData": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Post deleted successfully"
+                }
+            }
+        },
+        "response.DeletePostResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/response.DeletePostData"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "response.ErrorResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -1160,46 +1251,7 @@ const docTemplate = `{
                 }
             }
         },
-        "raion-battlepass_pkg_response.DeletePostData": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "raion-battlepass_pkg_response.DeletePostResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.DeletePostData"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "raion-battlepass_pkg_response.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "raion-battlepass_pkg_response.GetAllPostsResponse": {
+        "response.GetAllLikesResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -1208,15 +1260,16 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/raion-battlepass_pkg_response.Post"
+                        "$ref": "#/definitions/response.Like"
                     }
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.GetAllUsersResponse": {
+        "response.GetAllPostsResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -1225,15 +1278,16 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/raion-battlepass_pkg_response.User"
+                        "$ref": "#/definitions/response.Post"
                     }
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.GetCommentsResponse": {
+        "response.GetAllUsersResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -1242,138 +1296,221 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/raion-battlepass_pkg_response.Comment"
+                        "$ref": "#/definitions/response.User"
                     }
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.GetCurrentUserResponse": {
+        "response.GetCommentsResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.User"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.Comment"
+                    }
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.GetPostByIDResponse": {
+        "response.GetCurrentUserResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.Post"
+                    "$ref": "#/definitions/response.User"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.GetUserByIDResponse": {
+        "response.GetPostByIDResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.User"
+                    "$ref": "#/definitions/response.Post"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.LikeResponse": {
+        "response.GetUserByIDResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/response.User"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "response.Like": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2025-01-31T12:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "a1f5e4b3-8d2a-4c39-91a2-47b36295d8a3"
+                },
+                "post_id": {
+                    "type": "string",
+                    "example": "c6f7c988-233f-4f3c-a74d-17f72e4a1b56"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "b3d1a42b-6871-4a47-bec3-6df0980a9c75"
+                }
+            }
+        },
+        "response.LikeResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Like added successfully"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.LoginData": {
+        "response.LoginData": {
             "type": "object",
             "properties": {
+                "refresh_token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
                 "token": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 }
             }
         },
-        "raion-battlepass_pkg_response.LoginResponse": {
+        "response.LoginResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.LoginData"
+                    "$ref": "#/definitions/response.LoginData"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.Post": {
+        "response.Post": {
             "type": "object",
             "properties": {
                 "caption": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Had an amazing day at the beach!"
                 },
                 "created_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2025-01-31T12:00:00Z"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "f9d6b52a-76a1-4b2b-9229-4c8db23a5ef2"
                 },
                 "image_url": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/images/beach.jpg"
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2025-01-31T12:30:00Z"
                 },
                 "user_id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2e0850c7-d213-4a91-9b78-bb86e3a6f0d3"
                 }
             }
         },
-        "raion-battlepass_pkg_response.RegisterData": {
+        "response.RefreshTokenData": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string"
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 }
             }
         },
-        "raion-battlepass_pkg_response.RegisterResponse": {
+        "response.RefreshTokenResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.RegisterData"
+                    "$ref": "#/definitions/response.RefreshTokenData"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.SearchPostsResponse": {
+        "response.RegisterData": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "User registered successfully"
+                }
+            }
+        },
+        "response.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/response.RegisterData"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "response.SearchPostsResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -1382,61 +1519,94 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/raion-battlepass_pkg_response.Post"
+                        "$ref": "#/definitions/response.Post"
                     }
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.UpdatePostResponse": {
+        "response.SearchUsersResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.Post"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.User"
+                    }
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.UpdateUserResponse": {
+        "response.UpdatePostResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/raion-battlepass_pkg_response.User"
+                    "$ref": "#/definitions/response.Post"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "raion-battlepass_pkg_response.User": {
+        "response.UpdateUserResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/response.User"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "response.User": {
             "type": "object",
             "properties": {
                 "created_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2025-01-31T12:00:00Z"
                 },
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john.doe@example.com"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "3d5a8b92-f1c5-4dbe-a2a7-1d9a8c743e9b"
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2025-01-31T12:30:00Z"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
@@ -1444,8 +1614,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0.0",
-	Host:             "",
-	BasePath:         "",
+	Host:             "localhost:8084/api/v1",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "RAION ASSESSMENT API",
 	Description:      "This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.",
