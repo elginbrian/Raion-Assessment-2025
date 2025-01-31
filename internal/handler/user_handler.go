@@ -3,10 +3,10 @@ package handler
 import (
 	"fmt"
 	"log"
-	"os"
 	contract "raion-assessment/domain/contract"
 	entity "raion-assessment/domain/entity"
 	"raion-assessment/pkg/response"
+	"raion-assessment/pkg/util"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -21,37 +21,6 @@ func NewUserHandler(userService contract.IUserService, authService contract.IAut
         userService: userService,
         authService: authService,
     }
-}
-
-func mapToUserResponse(user entity.User) response.User {
-	return response.User{
-		ID:        user.ID,
-		Username:  user.Name,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
-}
-
-func (h *UserHandler) uploadProfile(c *fiber.Ctx, userID string) (string, error) {
-	file, err := c.FormFile("image")
-	if err != nil {
-		return "", nil
-	}
-	uploadDir := "./public/uploads/profile/" + userID + "/"
-	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-			return "", err
-		}
-	}
-
-	sanitizedFileName := sanitizeFileName(file.Filename)
-	savePath := uploadDir + sanitizedFileName
-	if err := c.SaveFile(file, savePath); err != nil {
-		return "", err
-	}
-
-	return "https://raion-assessment.elginbrian.com/uploads/profile/" + userID + "/" + sanitizedFileName, nil
 }
 
 // GetAllUsers godoc
@@ -71,7 +40,7 @@ func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 
 	var userResponses []response.User
 	for _, user := range users {
-		userResponses = append(userResponses, mapToUserResponse(user))
+		userResponses = append(userResponses, util.MapToUserResponse(user))
 	}
 
 	return response.Success(c, userResponses)
@@ -95,7 +64,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 		return response.Error(c, "User not found", fiber.StatusNotFound)
 	}
 
-	return response.Success(c, mapToUserResponse(user))
+	return response.Success(c, util.MapToUserResponse(user))
 }
 
 // UpdateUser godoc
@@ -114,7 +83,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /users [put]
 func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
-	token, err := extractToken(c)
+	token, err := util.GetToken(c)
 	if err != nil {
 		return response.Error(c.Status(fiber.StatusUnauthorized), "Unauthorized: "+err.Error())
 	}
@@ -140,7 +109,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 
 	var imageURL string
 	if imageFile != nil {
-		imageURL, err = h.uploadProfile(c, user.ID)
+		imageURL, err = util.UploadProfileImage(c, user.ID, "./uploads/profiles/")
 		if err != nil {
 			return response.Error(c.Status(fiber.StatusInternalServerError), "Failed to upload image")
 		}
@@ -171,7 +140,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 		return response.Error(c.Status(fiber.StatusInternalServerError), fmt.Sprintf("Error updating user: %v", err))
 	}
 
-	return response.Success(c, mapToUserResponse(updatedUser))
+	return response.Success(c, util.MapToUserResponse(updatedUser))
 }
 
 // SearchUsers godoc
@@ -202,7 +171,7 @@ func (h *UserHandler) SearchUsers(c *fiber.Ctx) error {
 
 	var userResponses []response.User
 	for _, user := range users {
-		userResponses = append(userResponses, mapToUserResponse(user))
+		userResponses = append(userResponses, util.MapToUserResponse(user))
 	}
 
 	return response.Success(c, userResponses)

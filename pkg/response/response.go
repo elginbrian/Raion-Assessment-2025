@@ -60,3 +60,7 @@ func ValidateStruct(s interface{}) map[string]string {
 
 	return errs
 }
+
+func HandleValidationError(c *fiber.Ctx, err string) error {
+	return ValidationError(c, err)
+}

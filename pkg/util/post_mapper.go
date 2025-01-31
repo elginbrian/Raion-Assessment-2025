@@ -1,0 +1,21 @@
+package util
+
+import (
+	entity "raion-assessment/domain/entity"
+	"raion-assessment/pkg/response"
+)
+
+func MapToPostResponse(posts []entity.Post) []response.Post {
+	var postResponse []response.Post
+	for _, post := range posts {
+		postResponse = append(postResponse, response.Post{
+			ID:        post.ID,
+			UserID:    post.UserID,
+			Caption:   post.Caption,
+			ImageURL:  post.ImageURL,
+			CreatedAt: post.CreatedAt,
+			UpdatedAt: post.UpdatedAt,
+		})
+	}
+	return postResponse
+}

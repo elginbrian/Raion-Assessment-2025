@@ -2,8 +2,8 @@ package handler
 
 import (
 	contract "raion-assessment/domain/contract"
-	entity "raion-assessment/domain/entity"
 	"raion-assessment/pkg/response"
+	"raion-assessment/pkg/util"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,16 +20,6 @@ func NewLikeHandler(likeService contract.ILikeService, authService contract.IAut
 	}
 }
 
-func (h *LikeHandler) extractUserFromToken(c *fiber.Ctx) (*entity.User, error) {
-	authHeader := c.Get("Authorization")
-	if authHeader == "" || len(authHeader) <= len("Bearer ") {
-		return nil, response.Error(c.Status(fiber.StatusUnauthorized), "Missing or invalid token")
-	}
-	token := authHeader[len("Bearer "):]
-	ctx := c.Context()
-	return h.authService.GetCurrentUser(ctx, token)
-}
-
 // LikePost godoc
 // @Summary Like a post
 // @Description Allows a user to like a post. Requires JWT authentication.
@@ -41,7 +31,7 @@ func (h *LikeHandler) extractUserFromToken(c *fiber.Ctx) (*entity.User, error) {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /posts/{post_id}/like [post]
 func (h *LikeHandler) LikePost(c *fiber.Ctx) error {
-	user, err := h.extractUserFromToken(c)
+	user, err := util.GetUserFromToken(c, h.authService)
 	if err != nil {
 		return err
 	}
@@ -70,7 +60,7 @@ func (h *LikeHandler) LikePost(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /posts/{post_id}/unlike [post]
 func (h *LikeHandler) UnlikePost(c *fiber.Ctx) error {
-	user, err := h.extractUserFromToken(c)
+	user, err := util.GetUserFromToken(c, h.authService)
 	if err != nil {
 		return err
 	}

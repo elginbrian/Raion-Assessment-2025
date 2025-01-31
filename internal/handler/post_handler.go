@@ -1,13 +1,11 @@
 package handler
 
 import (
-	"os"
 	contract "raion-assessment/domain/contract"
 	entity "raion-assessment/domain/entity"
 	"raion-assessment/pkg/request"
 	"raion-assessment/pkg/response"
-	"regexp"
-	"strings"
+	"raion-assessment/pkg/util"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -24,57 +22,6 @@ func NewPostHandler(postService contract.IPostService, authService contract.IAut
     }
 }
 
-func (h *PostHandler) extractUserFromToken(c *fiber.Ctx) (*entity.User, error) {
-	authHeader := c.Get("Authorization")
-	if authHeader == "" || len(authHeader) <= len("Bearer ") {
-		return nil, response.Error(c.Status(fiber.StatusUnauthorized), "Missing or invalid token")
-	}
-	token := authHeader[len("Bearer "):]
-	ctx := c.Context()
-	return h.authService.GetCurrentUser(ctx, token)
-}
-
-func (h *PostHandler) transformToPostResponse(posts []entity.Post) []response.Post {
-	var postResponse []response.Post
-	for _, post := range posts {
-		postResponse = append(postResponse, response.Post{
-			ID:        post.ID,
-			UserID:    post.UserID,
-			Caption:   post.Caption,
-			ImageURL:  post.ImageURL,
-			CreatedAt: post.CreatedAt,
-			UpdatedAt: post.UpdatedAt,
-		})
-	}
-	return postResponse
-}
-
-func (h *PostHandler) uploadImage(c *fiber.Ctx, userID string) (string, error) {
-	file, err := c.FormFile("image")
-	if err != nil {
-		return "", nil
-	}
-	uploadDir := "./public/uploads/posts/" + userID + "/"
-	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-			return "", err
-		}
-	}
-
-	sanitizedFileName := sanitizeFileName(file.Filename)
-	savePath := uploadDir + sanitizedFileName
-	if err := c.SaveFile(file, savePath); err != nil {
-		return "", err
-	}
-
-	return "https://raion-assessment.elginbrian.com/uploads/posts/" + userID + "/" + sanitizedFileName, nil
-}
-
-func sanitizeFileName(fileName string) string {
-	sanitized := strings.ReplaceAll(fileName, " ", "_")
-	return regexp.MustCompile(`[^a-zA-Z0-9\._-]`).ReplaceAllString(sanitized, "")
-}
-
 // GetAllPosts godoc
 // @Summary Get all posts
 // @Description Get a list of all posts, along with details like the user who created them, the caption, image URL, and timestamps.
@@ -89,7 +36,7 @@ func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
 	if err != nil {
 		return response.Error(c, err.Error(), fiber.StatusInternalServerError)
 	}
-	return response.Success(c, h.transformToPostResponse(posts), fiber.StatusOK)
+	return response.Success(c, util.MapToPostResponse(posts), fiber.StatusOK)
 }
 
 // GetPostByID godoc
@@ -109,7 +56,7 @@ func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {
 		return response.Error(c, "Post not found", fiber.StatusNotFound)
 	}
 
-	postResponse := h.transformToPostResponse([]entity.Post{post})[0]
+	postResponse := util.MapToPostResponse([]entity.Post{post})[0]
 	return response.Success(c, postResponse, fiber.StatusOK)
 }
 
@@ -129,7 +76,7 @@ func (h *PostHandler) GetPostsByUserID(c *fiber.Ctx) error {
 	if err != nil {
 		return response.Error(c, "Failed to fetch posts", fiber.StatusInternalServerError)
 	}
-	return response.Success(c, h.transformToPostResponse(posts), fiber.StatusOK)
+	return response.Success(c, util.MapToPostResponse(posts), fiber.StatusOK)
 }
 
 // CreatePost godoc
@@ -146,7 +93,7 @@ func (h *PostHandler) GetPostsByUserID(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /posts [post]
 func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
-	user, err := h.extractUserFromToken(c)
+	user, err := util.GetUserFromToken(c, h.authService)
 	if err != nil {
 		return err
 	}
@@ -156,7 +103,7 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 		return response.ValidationError(c, "Caption is required")
 	}
 
-	imageURL, err := h.uploadImage(c, user.ID)
+	imageURL, err := util.UploadPostImage(c, user.ID, "./uploads/posts/")
 	if err != nil {
 		return response.Error(c, "Failed to upload image", fiber.StatusInternalServerError)
 	}
@@ -172,7 +119,7 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 		return response.Error(c, err.Error(), fiber.StatusInternalServerError)
 	}
 
-	postResponse := h.transformToPostResponse([]entity.Post{createdPost})[0]
+	postResponse := util.MapToPostResponse([]entity.Post{createdPost})[0]
 	return response.Success(c, postResponse, fiber.StatusCreated)
 }
 
@@ -190,7 +137,7 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /posts/{id} [put]
 func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
-	user, err := h.extractUserFromToken(c)
+	user, err := util.GetUserFromToken(c, h.authService)
 	if err != nil {
 		return err
 	}
@@ -220,7 +167,7 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 		return response.Error(c, "Failed to update post", fiber.StatusInternalServerError)
 	}
 
-	postResponse := h.transformToPostResponse([]entity.Post{updatedPost})[0]
+	postResponse := util.MapToPostResponse([]entity.Post{updatedPost})[0]
 	return response.Success(c, postResponse, fiber.StatusOK)
 }
 
@@ -235,7 +182,7 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /posts/{id} [delete]
 func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
-	user, err := h.extractUserFromToken(c)
+	user, err := util.GetUserFromToken(c, h.authService)
 	if err != nil {
 		return err
 	}
@@ -277,5 +224,5 @@ func (h *PostHandler) SearchPosts(c *fiber.Ctx) error {
 		return response.Error(c, "No posts found", fiber.StatusNotFound)
 	}
 
-	return response.Success(c, h.transformToPostResponse(posts))
+	return response.Success(c, util.MapToPostResponse(posts))
 }

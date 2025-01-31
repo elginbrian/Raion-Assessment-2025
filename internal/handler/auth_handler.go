@@ -5,6 +5,7 @@ import (
 	contract "raion-assessment/domain/contract"
 	"raion-assessment/pkg/request"
 	"raion-assessment/pkg/response"
+	"raion-assessment/pkg/util"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -20,14 +21,6 @@ func NewAuthHandler(authService contract.IAuthService) *AuthHandler {
 		authService: authService,
 		validate:    validator.New(),
 	}
-}
-
-func extractToken(c *fiber.Ctx) (string, error) {
-	authHeader := c.Get("Authorization")
-	if authHeader == "" || len(authHeader) <= len("Bearer ") {
-		return "", fiber.NewError(fiber.StatusUnauthorized, "Missing or invalid token")
-	}
-	return authHeader[len("Bearer "):], nil
 }
 
 // @Summary Register a new user
@@ -137,7 +130,7 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 // @Failure 401 {object} response.ErrorResponse "Unauthorized"
 // @Router /auth/current-user [get]
 func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
-	token, err := extractToken(c)
+	token, err := util.GetToken(c)
 	if err != nil {
 		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
 	}
@@ -170,7 +163,7 @@ func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /auth/change-password [put]
 func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
-	token, err := extractToken(c)
+	token, err := util.GetToken(c)
 	if err != nil {
 		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
 	}

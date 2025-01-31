@@ -5,10 +5,10 @@ import (
 	"errors"
 	contract "raion-assessment/domain/contract"
 	entity "raion-assessment/domain/entity"
+	"raion-assessment/pkg/util"
 
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -66,12 +66,12 @@ func (s *authService) Login(email, password string) (string, string, error) {
 		return "", "", ErrIncorrectPassword
 	}
 
-	accessToken, err := generateJWT(user.ID, s.jwtSecret, AccessTokenExpiration)
+	accessToken, err := util.GenerateJWT(user.ID, s.jwtSecret, AccessTokenExpiration)
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := generateJWT(user.ID, s.refreshSecret, RefreshTokenExpiration)
+	refreshToken, err := util.GenerateJWT(user.ID, s.refreshSecret, RefreshTokenExpiration)
 	if err != nil {
 		return "", "", err
 	}
@@ -80,7 +80,7 @@ func (s *authService) Login(email, password string) (string, string, error) {
 }
 
 func (s *authService) RefreshToken(refreshToken string) (string, error) {
-	claims, err := parseJWT(refreshToken, s.refreshSecret)
+	claims, err := util.ParseJWT(refreshToken, s.refreshSecret)
 	if err != nil {
 		return "", ErrInvalidToken
 	}
@@ -90,11 +90,11 @@ func (s *authService) RefreshToken(refreshToken string) (string, error) {
 		return "", ErrInvalidToken
 	}
 
-	return generateJWT(userID, s.jwtSecret, AccessTokenExpiration)
+	return util.GenerateJWT(userID, s.jwtSecret, AccessTokenExpiration)
 }
 
 func (s *authService) GetCurrentUser(ctx context.Context, token string) (*entity.User, error) {
-	claims, err := parseJWT(token, s.jwtSecret)
+	claims, err := util.ParseJWT(token, s.jwtSecret)
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
@@ -142,35 +142,4 @@ func (s *authService) ChangePassword(userID, oldPassword, newPassword string) er
 	}
 
 	return nil
-}
-
-func generateJWT(userID, secret string, expiration time.Duration) (string, error) {
-	expirationTime := time.Now().Add(expiration)
-	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     expirationTime.Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
-}
-
-func parseJWT(tokenString, secret string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid token signing method")
-		}
-		return []byte(secret), nil
-	})
-
-	if err != nil || !token.Valid {
-		return nil, ErrInvalidToken
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, ErrInvalidToken
-	}
-
-	return claims, nil
 }

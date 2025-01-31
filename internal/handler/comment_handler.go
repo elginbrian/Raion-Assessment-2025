@@ -5,6 +5,7 @@ import (
 	entity "raion-assessment/domain/entity"
 	"raion-assessment/pkg/request"
 	"raion-assessment/pkg/response"
+	"raion-assessment/pkg/util"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,20 +20,6 @@ func NewCommentHandler(commentService contract.ICommentService, authService cont
 		commentService: commentService,
 		authService:    authService,
 	}
-}
-
-func (h *CommentHandler) getUserFromToken(c *fiber.Ctx) (*entity.User, error) {
-	authHeader := c.Get("Authorization")
-	if authHeader == "" || len(authHeader) <= len("Bearer ") {
-		return nil, response.Error(c, "Missing or invalid token", fiber.StatusUnauthorized)
-	}
-	token := authHeader[len("Bearer "):]
-	ctx := c.Context()
-	return h.authService.GetCurrentUser(ctx, token)
-}
-
-func (h *CommentHandler) handleValidationError(c *fiber.Ctx, err string) error {
-	return response.ValidationError(c, err)
 }
 
 // GetCommentsByPostID godoc
@@ -70,18 +57,18 @@ func (h *CommentHandler) GetCommentsByPostID(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /posts/{post_id}/comments [post]
 func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
-	user, err := h.getUserFromToken(c)
+	user, err := util.GetUserFromToken(c, h.authService)
 	if err != nil {
 		return err
 	}
 
 	var input request.CreateCommentRequest
 	if err := c.BodyParser(&input); err != nil {
-		return h.handleValidationError(c, "Invalid input")
+		return response.HandleValidationError(c, "Invalid input")
 	}
 
 	if input.Content == "" {
-		return h.handleValidationError(c, "Comment content cannot be empty")
+		return response.HandleValidationError(c, "Comment content cannot be empty")
 	}
 
 	comment := entity.Comment{
@@ -109,7 +96,7 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Router /comments/{id} [delete]
 func (h *CommentHandler) DeleteComment(c *fiber.Ctx) error {
-	user, err := h.getUserFromToken(c)
+	user, err := util.GetUserFromToken(c, h.authService)
 	if err != nil {
 		return err
 	}
