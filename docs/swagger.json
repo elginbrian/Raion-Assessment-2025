@@ -1,13 +1,11 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.",
+        "description": "This is a RESTful API for a simple social media application.",
         "title": "RAION ASSESSMENT API",
         "contact": {},
         "version": "1.0.0"
     },
-    "host": "localhost:8084/api/v1",
-    "basePath": "/",
     "paths": {
         "/auth/change-password": {
             "put": {
@@ -16,7 +14,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update your password securely. You need to be logged in and provide your old password along with the new one. Include your JWT token in the Authorization header.",
+                "description": "Update your password securely.",
                 "consumes": [
                     "application/json"
                 ],
@@ -882,7 +880,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update the bio, image_url, and/or username of the authenticated user.",
+                "description": "Update the bio, image_url, and/or username of the authenticated user. All fields are optional. If a field is not provided, the existing value will be retained.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -896,10 +894,9 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Updated username",
+                        "description": "Updated username (optional)",
                         "name": "username",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "string",

@@ -22,7 +22,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update your password securely. You need to be logged in and provide your old password along with the new one. Include your JWT token in the Authorization header.",
+                "description": "Update your password securely.",
                 "consumes": [
                     "application/json"
                 ],
@@ -888,7 +888,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update the bio, image_url, and/or username of the authenticated user.",
+                "description": "Update the bio, image_url, and/or username of the authenticated user. All fields are optional. If a field is not provided, the existing value will be retained.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -902,10 +902,9 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Updated username",
+                        "description": "Updated username (optional)",
                         "name": "username",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "string",
@@ -1618,11 +1617,11 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0.0",
-	Host:             "localhost:8084/api/v1",
-	BasePath:         "/",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "RAION ASSESSMENT API",
-	Description:      "This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.",
+	Description:      "This is a RESTful API for a simple social media application.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

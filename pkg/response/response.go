@@ -1,6 +1,8 @@
 package response
 
 import (
+	"log"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
@@ -63,4 +65,16 @@ func ValidateStruct(s interface{}) map[string]string {
 
 func HandleValidationError(c *fiber.Ctx, err string) error {
 	return ValidationError(c, err)
+}
+
+func ParseAndValidateRequest(c *fiber.Ctx, req interface{}) error {
+	if err := c.BodyParser(req); err != nil {
+		log.Printf("Error parsing request body: %v", err)
+		return ValidationError(c, "Invalid request format")
+	}
+	if err := validate.Struct(req); err != nil {
+		log.Printf("Validation failed: %v", err)
+		return ValidationError(c, err.Error())
+	}
+	return nil
 }

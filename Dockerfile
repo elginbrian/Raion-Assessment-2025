@@ -11,7 +11,7 @@ COPY vendor/ ./vendor/
 
 COPY . .
 
-COPY db/migrations /app/db/migrations
+COPY database/migrations /app/database/migrations
 
 COPY public/ /app/public/
 

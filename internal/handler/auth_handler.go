@@ -35,25 +35,14 @@ func NewAuthHandler(authService contract.IAuthService) *AuthHandler {
 // @Router /auth/register [post]
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req request.UserRegistrationRequest
-
-	if err := c.BodyParser(&req); err != nil {
-		log.Printf("Error parsing request body: %v", err)
-		return response.ValidationError(c, "Invalid request format")
+	if err := response.ParseAndValidateRequest(c, &req); err != nil {
+		return err
 	}
-
-	if err := h.validate.Struct(req); err != nil {
-		log.Printf("Validation failed: %v", err)
-		return response.ValidationError(c, err.Error())
-	}
-
 	if err := h.authService.Register(req.Username, req.Email, req.Password); err != nil {
 		log.Printf("Registration failed: %v", err)
 		return response.Error(c, err.Error())
 	}
-
-	return response.Success(c.Status(fiber.StatusCreated), response.RegisterData{
-		Message: "User registered successfully",
-	})
+	return response.Success(c.Status(fiber.StatusCreated), response.RegisterData{Message: "User registered successfully"})
 }
 
 // @Summary Log in a user
@@ -68,23 +57,14 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 // @Router /auth/login [post]
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req request.UserLoginRequest
-
-	if err := c.BodyParser(&req); err != nil {
-		log.Printf("Error parsing request body: %v", err)
-		return response.ValidationError(c, "Invalid request format")
+	if err := response.ParseAndValidateRequest(c, &req); err != nil {
+		return err
 	}
-
-	if err := h.validate.Struct(req); err != nil {
-		log.Printf("Validation failed: %v", err)
-		return response.ValidationError(c, err.Error())
-	}
-
 	accessToken, refreshToken, err := h.authService.Login(req.Email, req.Password)
 	if err != nil {
 		log.Printf("Login failed: %v", err)
 		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
 	}
-
 	return response.Success(c, response.LoginData{
 		AccessToken:  "Bearer " + accessToken,
 		RefreshToken: refreshToken,
@@ -103,21 +83,15 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 // @Router /auth/refresh-token [post]
 func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	var req request.RefreshTokenRequest
-
-	if err := c.BodyParser(&req); err != nil {
-		log.Printf("Error parsing request body: %v", err)
-		return response.ValidationError(c, "Invalid request format")
+	if err := response.ParseAndValidateRequest(c, &req); err != nil {
+		return err
 	}
-
 	newAccessToken, err := h.authService.RefreshToken(req.RefreshToken)
 	if err != nil {
 		log.Printf("Token refresh failed: %v", err)
 		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
 	}
-
-	return response.Success(c, response.RefreshTokenData{
-		AccessToken: "Bearer " + newAccessToken,
-	})
+	return response.Success(c, response.RefreshTokenData{AccessToken: "Bearer " + newAccessToken})
 }
 
 // @Summary Get current user info
@@ -134,14 +108,11 @@ func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
 	if err != nil {
 		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
 	}
-
-	ctx := c.Context()
-	user, err := h.authService.GetCurrentUser(ctx, token)
+	user, err := h.authService.GetCurrentUser(c.Context(), token)
 	if err != nil {
 		log.Printf("Error fetching user info: %v", err)
 		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
 	}
-
 	return response.Success(c, response.User{
 		ID:        user.ID,
 		Username:  user.Name,
@@ -152,7 +123,7 @@ func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
 }
 
 // @Summary Change your password
-// @Description Update your password securely. You need to be logged in and provide your old password along with the new one. Include your JWT token in the Authorization header.
+// @Description Update your password securely.
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -167,31 +138,18 @@ func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 	if err != nil {
 		return response.Error(c.Status(fiber.StatusUnauthorized), err.Error())
 	}
-
-	ctx := c.Context()
-	user, err := h.authService.GetCurrentUser(ctx, token)
+	user, err := h.authService.GetCurrentUser(c.Context(), token)
 	if err != nil {
 		log.Printf("Error fetching user info for password change: %v", err)
 		return response.Error(c.Status(fiber.StatusUnauthorized), "Unauthorized: "+err.Error())
 	}
-
 	var req request.ChangePasswordRequest
-	if err := c.BodyParser(&req); err != nil {
-		log.Printf("Error parsing request body: %v", err)
-		return response.ValidationError(c, "Invalid request format")
+	if err := response.ParseAndValidateRequest(c, &req); err != nil {
+		return err
 	}
-
-	if err := h.validate.Struct(req); err != nil {
-		log.Printf("Validation failed: %v", err)
-		return response.ValidationError(c, err.Error())
-	}
-
 	if err := h.authService.ChangePassword(user.ID, req.OldPassword, req.NewPassword); err != nil {
 		log.Printf("Password change failed: %v", err)
 		return response.Error(c, err.Error())
 	}
-
-	return response.Success(c, response.ChangePasswordData{
-		Message: "Password changed successfully",
-	})
+	return response.Success(c, response.ChangePasswordData{Message: "Password changed successfully"})
 }
