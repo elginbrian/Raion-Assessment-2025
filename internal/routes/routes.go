@@ -9,6 +9,7 @@ import (
 func SetupRoutes(app *fiber.App, container di.Container, jwtSecret string) {
 	setupStaticRoutes(app)
 	setupDocsRoutes(app)
-	setupAPIRoutes(app, container, jwtSecret)
+	setupRESTRoutes(app, container, jwtSecret)
+	SetupGraphQLRoute(app, container)
 	setupErrorRoutes(app)
 }

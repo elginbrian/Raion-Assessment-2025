@@ -81,7 +81,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 // @Failure 400 {object} response.ErrorResponse "Validation error"
 // @Failure 401 {object} response.ErrorResponse "Unauthorized or invalid token"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /users [put]
+// @Router /users [patch]
 func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	token, err := util.GetToken(c)
 	if err != nil {

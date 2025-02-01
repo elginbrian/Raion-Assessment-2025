@@ -9,14 +9,19 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
+        "termsOfService": "http://swagger.io/terms/",
         "contact": {},
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
         "/auth/change-password": {
-            "put": {
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -447,7 +452,48 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a post by its ID. Only the post creator is allowed to delete it. Requires JWT authentication.",
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Delete a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful delete post response",
+                        "schema": {
+                            "$ref": "#/definitions/response.DeletePostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -487,47 +533,6 @@ const docTemplate = `{
                         "description": "Successful update response",
                         "schema": {
                             "$ref": "#/definitions/response.UpdatePostResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete a post by its ID. Only the post creator is allowed to delete it. Requires JWT authentication.",
-                "tags": [
-                    "posts"
-                ],
-                "summary": "Delete a post",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Post ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Successful delete post response",
-                        "schema": {
-                            "$ref": "#/definitions/response.DeletePostResponse"
                         }
                     },
                     "400": {
@@ -882,7 +887,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -1616,12 +1621,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0.0",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8084",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "RAION ASSESSMENT API",
-	Description:      "This is a RESTful API for a simple social media application.",
+	Description:      "This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

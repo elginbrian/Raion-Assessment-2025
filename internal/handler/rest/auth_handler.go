@@ -132,7 +132,7 @@ func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error {
 // @Success 200 {object} response.ChangePasswordData "Password changed successfully"
 // @Failure 400 {object} response.ErrorResponse "Validation error or invalid request format"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /auth/change-password [put]
+// @Router /auth/change-password [patch]
 func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 	token, err := util.GetToken(c)
 	if err != nil {

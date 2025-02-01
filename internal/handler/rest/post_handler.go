@@ -135,7 +135,7 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 // @Success 200 {object} response.UpdatePostResponse "Successful update response"
 // @Failure 400 {object} response.ErrorResponse "Bad request"
 // @Failure 500 {object} response.ErrorResponse "Internal server error"
-// @Router /posts/{id} [put]
+// @Router /posts/{id} [patch]
 func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	user, err := util.GetUserFromToken(c, h.authService)
 	if err != nil {

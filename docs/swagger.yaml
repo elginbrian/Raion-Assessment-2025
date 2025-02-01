@@ -1,3 +1,4 @@
+basePath: /
 definitions:
   request.ChangePasswordRequest:
     properties:
@@ -394,14 +395,22 @@ definitions:
         example: john_doe
         type: string
     type: object
+host: localhost:8084
 info:
   contact: {}
-  description: This is a RESTful API for a simple social media application.
+  description: This is a RESTful API for a simple social media application. It allows
+    users to manage their posts, including creating, updating, and deleting posts,
+    and provides authentication using JWT. The API is built using the Fiber framework
+    and interacts with a PostgreSQL database.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
   title: RAION ASSESSMENT API
-  version: 1.0.0
+  version: "1.0"
 paths:
   /auth/change-password:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update your password securely.
@@ -684,7 +693,7 @@ paths:
       summary: Get a post by ID
       tags:
       - posts
-    put:
+    patch:
       consumes:
       - application/json
       description: Update only the caption of an existing post. Only the post creator
@@ -969,7 +978,7 @@ paths:
       summary: Get all users
       tags:
       - users
-    put:
+    patch:
       consumes:
       - multipart/form-data
       description: Update the bio, image_url, and/or username of the authenticated

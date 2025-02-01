@@ -1,7 +1,8 @@
 package di
 
 import (
-	"raion-assessment/internal/handler"
+	graph "raion-assessment/internal/handler/graphql"
+	rest "raion-assessment/internal/handler/rest"
 	"raion-assessment/internal/repository"
 	"raion-assessment/internal/service"
 
@@ -9,34 +10,40 @@ import (
 )
 
 type Container struct {
-	UserHandler    *handler.UserHandler
-	AuthHandler    *handler.AuthHandler
-	PostHandler    *handler.PostHandler
-	CommentHandler *handler.CommentHandler
-	LikeHandler    *handler.LikeHandler
+	UserHandler    *rest.UserHandler
+	AuthHandler    *rest.AuthHandler
+	PostHandler    *rest.PostHandler
+	CommentHandler *rest.CommentHandler
+	LikeHandler    *rest.LikeHandler
+	UserResolver   *graph.UserResolver
+	PostResolver   *graph.PostResolver
 }
 
 func NewContainer(db *pgxpool.Pool, jwtSecret string, refreshSecret string) *Container {
 	// Repositories
-	userRepo := repository.NewUserRepository(db)
-	authRepo := repository.NewAuthRepository(db)
-	postRepo := repository.NewPostRepository(db)
+	userRepo 	:= repository.NewUserRepository(db)
+	authRepo 	:= repository.NewAuthRepository(db)
+	postRepo 	:= repository.NewPostRepository(db)
 	commentRepo := repository.NewCommentRepository(db) 
-	likeRepo := repository.NewLikeRepository(db) 
+	likeRepo 	:= repository.NewLikeRepository(db) 
 
 	// Services
-	userService := service.NewUserService(userRepo)
-	authService := service.NewAuthService(userRepo, authRepo, jwtSecret, refreshSecret)
-	postService := service.NewPostService(postRepo) 
-	commentService := service.NewCommentService(commentRepo)
-	likeService := service.NewLikeService(likeRepo)
+	userService 	:= service.NewUserService(userRepo)
+	authService 	:= service.NewAuthService(userRepo, authRepo, jwtSecret, refreshSecret)
+	postService 	:= service.NewPostService(postRepo) 
+	commentService 	:= service.NewCommentService(commentRepo)
+	likeService 	:= service.NewLikeService(likeRepo)
 
 	// Handlers
-	userHandler := handler.NewUserHandler(userService, authService)
-	authHandler := handler.NewAuthHandler(authService)
-	postHandler := handler.NewPostHandler(postService, authService) 
-	commentHandler := handler.NewCommentHandler(commentService, authService)
-	likeHandler := handler.NewLikeHandler(likeService, authService)
+	userHandler 	:= rest.NewUserHandler(userService, authService)
+	authHandler 	:= rest.NewAuthHandler(authService)
+	postHandler 	:= rest.NewPostHandler(postService, authService) 
+	commentHandler 	:= rest.NewCommentHandler(commentService, authService)
+	likeHandler 	:= rest.NewLikeHandler(likeService, authService)
+
+	// Resolvers
+	userResolver 	:= graph.NewUserResolver(userService, authService)
+	postResolver 	:= graph.NewPostResolver(postService, authService)
 
 	return &Container{
 		UserHandler: userHandler,
@@ -44,5 +51,7 @@ func NewContainer(db *pgxpool.Pool, jwtSecret string, refreshSecret string) *Con
 		PostHandler: postHandler, 
 		CommentHandler: commentHandler,
 		LikeHandler: likeHandler,
+		UserResolver: userResolver,
+		PostResolver: postResolver,
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func setupAPIRoutes(app *fiber.App, container di.Container, jwtSecret string) {
+func setupRESTRoutes(app *fiber.App, container di.Container, jwtSecret string) {
 	setupUserRoutes(app, container)
 	setupAuthRoutes(app, container, jwtSecret)
 	setupPostRoutes(app, container)
@@ -34,7 +34,7 @@ func setupSearchRoutes(app *fiber.App, container di.Container) {
 
 func setupUserRoutes(app *fiber.App, container di.Container) {
 	userGroup := app.Group("/api/v1/users")
-	userGroup.Put("/", container.UserHandler.UpdateUser)
+	userGroup.Patch("/", container.UserHandler.UpdateUser)
 	userGroup.Get("/", container.UserHandler.GetAllUsers)
 	userGroup.Get("/:id", container.UserHandler.GetUserByID)
 }
@@ -45,13 +45,13 @@ func setupAuthRoutes(app *fiber.App, container di.Container, jwtSecret string) {
 	authGroup.Post("/login", container.AuthHandler.Login)
 	authGroup.Post("/refresh-token", container.AuthHandler.RefreshToken)
 	authGroup.Get("/current-user", container.AuthHandler.GetUserInfo, middleware.TokenValidationMiddleware(jwtSecret))
-	authGroup.Put("/change-password", container.AuthHandler.ChangePassword, middleware.TokenValidationMiddleware(jwtSecret))
+	authGroup.Patch("/change-password", container.AuthHandler.ChangePassword, middleware.TokenValidationMiddleware(jwtSecret))
 }
 
 func setupPostRoutes(app *fiber.App, container di.Container) {
 	postGroup := app.Group("/api/v1/posts")
 	postGroup.Post("/", container.PostHandler.CreatePost)
-	postGroup.Put("/:id", container.PostHandler.UpdatePost)
+	postGroup.Patch("/:id", container.PostHandler.UpdatePost)
 	postGroup.Delete("/:id", container.PostHandler.DeletePost)
 	postGroup.Get("/", container.PostHandler.GetAllPosts)
 	postGroup.Get("/:id", container.PostHandler.GetPostByID)

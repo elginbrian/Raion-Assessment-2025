@@ -19,3 +19,13 @@ func MapToPostResponse(posts []entity.Post) []response.Post {
 	}
 	return postResponse
 }
+
+func MapToSinglePostResponse(post entity.Post) response.Post {
+	return response.Post{
+		ID:        post.ID,
+		UserID:    post.UserID,
+		Caption:   post.Caption,
+		ImageURL:  post.ImageURL,
+		CreatedAt: post.CreatedAt,
+	}
+}

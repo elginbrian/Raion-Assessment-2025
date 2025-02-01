@@ -1,14 +1,21 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a RESTful API for a simple social media application.",
+        "description": "This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.",
         "title": "RAION ASSESSMENT API",
+        "termsOfService": "http://swagger.io/terms/",
         "contact": {},
-        "version": "1.0.0"
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
     },
+    "host": "localhost:8084",
+    "basePath": "/",
     "paths": {
         "/auth/change-password": {
-            "put": {
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -439,7 +446,48 @@
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a post by its ID. Only the post creator is allowed to delete it. Requires JWT authentication.",
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Delete a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful delete post response",
+                        "schema": {
+                            "$ref": "#/definitions/response.DeletePostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -479,47 +527,6 @@
                         "description": "Successful update response",
                         "schema": {
                             "$ref": "#/definitions/response.UpdatePostResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete a post by its ID. Only the post creator is allowed to delete it. Requires JWT authentication.",
-                "tags": [
-                    "posts"
-                ],
-                "summary": "Delete a post",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Post ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Successful delete post response",
-                        "schema": {
-                            "$ref": "#/definitions/response.DeletePostResponse"
                         }
                     },
                     "400": {
@@ -874,7 +881,7 @@
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
