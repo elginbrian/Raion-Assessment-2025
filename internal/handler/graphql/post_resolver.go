@@ -28,10 +28,17 @@ func (r *PostResolver) GetAllPosts(p graphql.ResolveParams) (interface{}, error)
 		return nil, fmt.Errorf("failed to fetch posts")
 	}
 
+	if posts == nil {
+		posts = []entity.Post{} 
+	}
+
+	log.Println("Fetched posts:", posts)
+
 	postResponses := make([]response.Post, 0, len(posts))
 	for _, post := range posts {
 		postResponses = append(postResponses, util.MapToSinglePostResponse(post))
 	}
+
 	return postResponses, nil
 }
 
@@ -52,7 +59,12 @@ func (r *PostResolver) GetPostsByUserID(p graphql.ResolveParams) (interface{}, e
 
 	posts, err := r.postService.FetchPostsByUserID(userID)
 	if err != nil {
+		log.Println("Error fetching posts for user:", err)
 		return nil, fmt.Errorf("no posts found for this user")
+	}
+
+	if posts == nil {
+		posts = []entity.Post{} 
 	}
 
 	postResponses := make([]response.Post, 0, len(posts))
@@ -103,7 +115,6 @@ func (r *PostResolver) CreatePost(p graphql.ResolveParams) (interface{}, error) 
 	return util.MapToSinglePostResponse(createdPost), nil
 }
 
-// Update post caption
 func (r *PostResolver) UpdatePostCaption(p graphql.ResolveParams) (interface{}, error) {
 	ctx := p.Context
 	token, err := util.ExtractTokenFromContext(ctx)
@@ -141,7 +152,6 @@ func (r *PostResolver) UpdatePostCaption(p graphql.ResolveParams) (interface{}, 
 	return util.MapToSinglePostResponse(updatedPost), nil
 }
 
-// Delete a post
 func (r *PostResolver) DeletePost(p graphql.ResolveParams) (interface{}, error) {
 	ctx := p.Context
 	token, err := util.ExtractTokenFromContext(ctx)

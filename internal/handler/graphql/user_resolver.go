@@ -28,10 +28,15 @@ func (r *UserResolver) GetAllUsers(p graphql.ResolveParams) (interface{}, error)
 		return nil, fmt.Errorf("failed to fetch users")
 	}
 
+	if users == nil {
+		users = []entity.User{}
+	}
+	
 	userResponses := make([]response.User, 0, len(users))
 	for _, user := range users {
 		userResponses = append(userResponses, util.MapToUserResponse(user))
 	}
+
 	return userResponses, nil
 }
 
@@ -66,6 +71,7 @@ func (r *UserResolver) SearchUsers(p graphql.ResolveParams) (interface{}, error)
 	for _, user := range users {
 		userResponses = append(userResponses, util.MapToUserResponse(user))
 	}
+
 	return userResponses, nil
 }
 

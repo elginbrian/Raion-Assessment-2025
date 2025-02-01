@@ -15,7 +15,7 @@ import (
 )
 
 func SetupGraphQLRoute(app *fiber.App, container di.Container) {
-	graphqlSchema, err := createGraphQLSchema()
+	graphqlSchema, err := createGraphQLSchema(container)
 	if err != nil {
 		log.Printf("Failed to create GraphQL schema: %v", err)
 		return
@@ -27,23 +27,23 @@ func SetupGraphQLRoute(app *fiber.App, container di.Container) {
 	})
 
 	app.Post("/api/v1/graphql", graphqlHandler(graphQLHandler))
-	app.Get("/api/v1/graphql", playgroundHandler())
+	app.Get("/graphql/docs", playgroundHandler())
 }
 
-func createGraphQLSchema() (graphql.Schema, error) {
+func createGraphQLSchema(container di.Container) (graphql.Schema, error) {
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: util.MergeFields(
-			util.ConvertFieldDefinitionMap(schema.UserQueryType.Fields()),
-			util.ConvertFieldDefinitionMap(schema.PostQueryType.Fields()),
+			util.ConvertFieldDefinitionMap(schema.NewUserQueryType(container).Fields()),
+			util.ConvertFieldDefinitionMap(schema.NewPostQueryType(container).Fields()),
 		),
 	})
 
 	rootMutation := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Mutation",
 		Fields: util.MergeFields(
-			util.ConvertFieldDefinitionMap(schema.UserMutationType.Fields()),
-			util.ConvertFieldDefinitionMap(schema.PostMutationType.Fields()),
+			util.ConvertFieldDefinitionMap(schema.NewUserQueryType(container).Fields()),
+			util.ConvertFieldDefinitionMap(schema.NewPostMutationType(container).Fields()),
 		),
 	})
 

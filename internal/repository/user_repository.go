@@ -21,7 +21,7 @@ func NewUserRepository(db *pgxpool.Pool) contract.IUserRepository {
 }
 
 func (r *userRepository) GetAllUsers(ctx context.Context) ([]entity.User, error) {
-	rows, err := r.db.Query(ctx, "SELECT id, name, email, created_at, updated_at FROM users")
+	rows, err := r.db.Query(ctx, "SELECT id, name, email, bio, image_url, created_at, updated_at FROM users")
 	if err != nil {
 		return nil, fmt.Errorf("error fetching users: %w", err)
 	}
@@ -30,7 +30,7 @@ func (r *userRepository) GetAllUsers(ctx context.Context) ([]entity.User, error)
 	var users []entity.User
 	for rows.Next() {
 		var user entity.User
-		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Bio, &user.ImageURL, &user.CreatedAt, &user.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("error scanning user row: %w", err)
 		}
 		users = append(users, user)
@@ -45,8 +45,8 @@ func (r *userRepository) GetAllUsers(ctx context.Context) ([]entity.User, error)
 
 func (r *userRepository) GetUserByID(ctx context.Context, id string) (entity.User, error) {
 	var user entity.User
-	err := r.db.QueryRow(ctx, "SELECT id, name, email, created_at, updated_at FROM users WHERE id = $1", id).
-		Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt, &user.UpdatedAt)
+	err := r.db.QueryRow(ctx, "SELECT id, name, email, bio, image_url, created_at, updated_at FROM users WHERE id = $1", id).
+		Scan(&user.ID, &user.Name, &user.Email, &user.Bio, &user.ImageURL, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return user, errors.New("user not found")
