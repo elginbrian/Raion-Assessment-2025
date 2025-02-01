@@ -1623,7 +1623,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8084",
-	BasePath:         "/",
+	BasePath:         "/api/v1/",
 	Schemes:          []string{},
 	Title:            "RAION ASSESSMENT API",
 	Description:      "This is a RESTful API for a simple social media application. It allows users to manage their posts, including creating, updating, and deleting posts, and provides authentication using JWT. The API is built using the Fiber framework and interacts with a PostgreSQL database.",

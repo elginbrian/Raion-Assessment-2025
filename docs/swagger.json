@@ -12,7 +12,7 @@
         "version": "1.0"
     },
     "host": "localhost:8084",
-    "basePath": "/",
+    "basePath": "/api/v1/",
     "paths": {
         "/auth/change-password": {
             "patch": {
